@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTheme } from '../components/ThemeProvider';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 type Item = {
   product: string;
@@ -84,6 +86,11 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .btn{appearance:none; border:1px solid var(--border); background:var(--panel); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow); font-weight:600; text-decoration:none}
 .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
 
+.theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease}
+.theme-toggle:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.theme-toggle .icon{width:16; height:16; color:var(--brand)}
+.theme-toggle .text{font-size:13px; font-weight:600}
+
 .hero{border:1px solid var(--border); background:linear-gradient(180deg, rgba(90,169,255,.08), transparent 50%), var(--panel); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; align-items:center; overflow:hidden;}
 .hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px}
 .hero p{margin:0; color:var(--muted)}
@@ -143,8 +150,8 @@ function fmtDate(d:string){
 }
 
 export default function Page(){
+  const { themeLight } = useTheme();
   const [brief, setBrief] = useState<Brief|null>(null);
-  const [themeLight, setThemeLight] = useState(false);
   const [filter, setFilter] = useState<string>('全部');
 
   useEffect(()=>{ fetch('/api/brief').then(r=>r.json()).then(setBrief); },[]);
@@ -167,7 +174,7 @@ export default function Page(){
   const Nav = () => (
     <div className="actions">
       <a className="btn" href="/archive">归档</a>
-      <button className="btn" onClick={()=>setThemeLight(v=>!v)}>切换主题</button>
+      <ThemeToggle />
       <button className="btn" onClick={()=>{
         const lines = [`## ${fmtDate(brief.date)} AI 产品每日简报`, `**要点**：${brief.headline}`, '', ...brief.items.map(it=>`- **${it.product}** [${it.type.toUpperCase()}] ${it.summary}`)];
         navigator.clipboard.writeText(lines.join('\n'));
@@ -206,7 +213,7 @@ export default function Page(){
           </div>
 
           <div className="card" style={{padding:'14px'}}>
-            {/* ✅ 带 LOGO 的筛选器；每个产品附“历史”链接 */}
+            {/* ✅ 带 LOGO 的筛选器；每个产品附"历史"链接 */}
             <div className="filterbar">
               {['全部', ...products].map(p=> {
                 const meta = PRODUCT_META[p] || { label: p, icon: <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="currentColor"/></svg> };

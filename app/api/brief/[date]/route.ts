@@ -12,3 +12,4 @@ export async function GET(_: Request, { params }: { params: { date: string } }) 
   return NextResponse.json(data ?? { date: params.date, headline: '', items: [] });
 }
 
+

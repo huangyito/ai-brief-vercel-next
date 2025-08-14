@@ -1,0 +1,105 @@
+:root{
+  --bg:#0b0f16; --panel:#0f1624; --panel-2:#121a2a; --text:#e6ecff; --muted:#9fb0cf;
+  --brand:#5aa9ff; --accent:#7ef0ff; --ok:#63f3a6; --warn:#ffd166; --bad:#ff6b6b; --chip:#1a2132;
+  --border:rgba(255,255,255,.08);
+  --shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
+  --radius:16px;
+}
+
+.light{ 
+  --bg:#f7f9fc; --panel:#ffffff; --panel-2:#f0f3f9; --text:#0f1624; --muted:#5b6780; 
+  --brand:#2667ff; --accent:#1aa6b7; --chip:#e9eef7; --border:rgba(10,20,30,.08); 
+  --shadow:0 10px 28px rgba(16,34,64,.08), inset 0 1px 0 rgba(255,255,255,.6); 
+}
+
+*{box-sizing:border-box}
+
+html,body{height:100%}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 80% -100px, rgba(90,169,255,.18), transparent 60%),
+    radial-gradient(900px 600px at -10% -50px, rgba(126,240,255,.12), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,"Microsoft YaHei",Helvetica,Arial,"Noto Sans",sans-serif;
+  letter-spacing:.2px;
+}
+
+/* 主题切换按钮样式 */
+.theme-toggle{
+  display:flex; 
+  align-items:center; 
+  gap:8px; 
+  background:var(--panel-2); 
+  border:1px solid var(--border); 
+  border-radius:12px; 
+  padding:8px 12px; 
+  cursor:pointer; 
+  transition:all 0.2s ease; 
+  color:var(--text);
+}
+
+.theme-toggle:hover{
+  transform:translateY(-1px); 
+  box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+
+.theme-toggle .icon{
+  width:16; 
+  height:16; 
+  color:var(--brand);
+}
+
+.theme-toggle .text{
+  font-size:13px; 
+  font-weight:600;
+}
+
+/* 通用按钮样式 */
+.btn{
+  appearance:none; 
+  border:1px solid var(--border); 
+  background:var(--panel); 
+  color:var(--text); 
+  padding:10px 14px; 
+  border-radius:12px; 
+  cursor:pointer; 
+  box-shadow:var(--shadow); 
+  font-weight:600; 
+  text-decoration:none;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn:active{
+  transform:translateY(0);
+}
+
+/* 卡片样式 */
+.card{
+  border:1px solid var(--border); 
+  background:var(--panel); 
+  border-radius:var(--radius); 
+  box-shadow:var(--shadow);
+}
+
+/* 链接样式 */
+.back{
+  color:var(--brand); 
+  text-decoration:none; 
+  font-size:14px; 
+  opacity:.8; 
+  padding:8px 12px; 
+  border:1px solid var(--border); 
+  border-radius:8px; 
+  background:var(--panel);
+}
+
+.back:hover{
+  opacity:1; 
+  transform:translateY(-1px);
+}
