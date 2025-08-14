@@ -9,11 +9,47 @@ type Item = {
   tags?: string[];
   sources?: {name:string; url:string}[];
   time?: string;
-}
-type Brief = {
-  date: string;
-  headline: string;
-  items: Item[];
+};
+type Brief = { date: string; headline: string; items: Item[]; };
+
+/** —— 产品元信息：名称 + 极简SVG占位LOGO —— */
+const PRODUCT_META: Record<string, { label: string; icon: JSX.Element }> = {
+  OpenAI: { label: 'OpenAI', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="currentColor"/></svg>
+  )},
+  Anthropic: { label: 'Anthropic', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" fill="currentColor"/></svg>
+  )},
+  Google: { label: 'Google', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 8 8" stroke="currentColor" fill="none" strokeWidth="2"/></svg>
+  )},
+  Meta: { label: 'Meta', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M4 16c2-8 8-8 10 0 2-8 8-8 10 0" stroke="currentColor" fill="none" strokeWidth="2"/></svg>
+  )},
+  Mistral: { label: 'Mistral', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M3 12h18M6 8h12M6 16h12" stroke="currentColor" fill="none" strokeWidth="2"/></svg>
+  )},
+  xAI: { label: 'xAI', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" fill="none" strokeWidth="2"/></svg>
+  )},
+  Microsoft: { label: 'Microsoft', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M4 4h8v8H4zM12 4h8v8h-8zM4 12h8v8H4zM12 12h8v8h-8z" fill="currentColor"/></svg>
+  )},
+  '百度': { label: '百度', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3" fill="currentColor"/><path d="M5 16h14" stroke="currentColor" strokeWidth="2"/></svg>
+  )},
+  '阿里': { label: '阿里', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M4 12h16M12 4v16" stroke="currentColor" strokeWidth="2"/></svg>
+  )},
+  '字节': { label: '字节', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><rect x="6" y="4" width="3" height="16" fill="currentColor"/><rect x="11" y="4" width="3" height="16" fill="currentColor"/><rect x="16" y="6" width="2" height="12" fill="currentColor"/></svg>
+  )},
+  '讯飞': { label: '讯飞', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2"/></svg>
+  )},
+  'Kimi': { label: 'Kimi', icon: (
+    <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="8" cy="10" r="2" fill="currentColor"/><circle cx="16" cy="10" r="2" fill="currentColor"/></svg>
+  )},
 };
 
 const styles = `
@@ -27,7 +63,16 @@ const styles = `
 .light{ --bg:#f7f9fc; --panel:#ffffff; --panel-2:#f0f3f9; --text:#0f1624; --muted:#5b6780; --brand:#2667ff; --accent:#1aa6b7; --chip:#e9eef7; --border:rgba(10,20,30,.08); --shadow:0 10px 28px rgba(16,34,64,.08), inset 0 1px 0 rgba(255,255,255,.6); }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0; background:radial-gradient(1200px 600px at 80% -100px, rgba(90,169,255,.18), transparent 60%), radial-gradient(900px 600px at -10% -50px, rgba(126,240,255,.12), transparent 60%), var(--bg); color:var(--text); font:16px/1.65 system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, "Microsoft YaHei", Helvetica, Arial, "Noto Sans", sans-serif; letter-spacing:.2px;}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 80% -100px, rgba(90,169,255,.18), transparent 60%),
+    radial-gradient(900px 600px at -10% -50px, rgba(126,240,255,.12), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,"Microsoft YaHei",Helvetica,Arial,"Noto Sans",sans-serif;
+  letter-spacing:.2px;
+}
 .wrap{max-width:1100px; margin:48px auto; padding:0 20px}
 header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;}
 .brand{display:flex; align-items:center; gap:14px}
@@ -35,22 +80,27 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .logo:after{content:""; position:absolute; inset:2px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,0)); mix-blend:screen}
 .title{font-size:22px; font-weight:700; letter-spacing:.3px}
 .subtitle{color:var(--muted); font-size:13px}
-.actions{display:flex; gap:8px}
-.btn{appearance:none; border:1px solid var(--border); background:var(--panel); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow); font-weight:600}
+.actions{display:flex; gap:8px; flex-wrap:wrap}
+.btn{appearance:none; border:1px solid var(--border); background:var(--panel); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow); font-weight:600; text-decoration:none}
 .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+
 .hero{border:1px solid var(--border); background:linear-gradient(180deg, rgba(90,169,255,.08), transparent 50%), var(--panel); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; align-items:center; overflow:hidden;}
-.hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px} .hero p{margin:0; color:var(--muted)}
+.hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px}
+.hero p{margin:0; color:var(--muted)}
 .date{font-feature-settings:"tnum" 1, "cv01" 1; opacity:.9}
 .kpis{display:flex; gap:12px; flex-wrap:wrap; margin-top:12px}
 .kpi{flex:1; min-width:160px; border:1px solid var(--border); background:var(--panel-2); border-radius:14px; padding:14px}
 .kpi .n{font-size:22px; font-weight:800} .kpi .t{font-size:12px; color:var(--muted)}
+
 .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px; margin-top:18px}
 .col-8{grid-column:span 8} .col-4{grid-column:span 4}
 @media (max-width: 900px){.hero{grid-template-columns:1fr}.col-8,.col-4{grid-column:1 / -1}}
+
 .card{border:1px solid var(--border); background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow)}
 .card h3{margin:0; font-size:16px}
 .card .hd{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px dashed var(--border)}
 .card .bd{padding:10px 8px 14px}
+
 .feed{display:flex; flex-direction:column; gap:10px}
 .item{display:grid; grid-template-columns: 24px 1fr auto; gap:12px; padding:10px 10px; border-radius:12px; border:1px solid transparent}
 .item:hover{border-color:var(--border); background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0))}
@@ -62,14 +112,17 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .meta{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px}
 .sources{display:flex; gap:8px; flex-wrap:wrap}
 .src{font-size:12px; color:var(--brand); text-decoration:none; border-bottom:1px dashed rgba(90,169,255,.4)}
+
 .filterbar{display:flex; gap:8px; flex-wrap:wrap}
-.pill{padding:8px 10px; border-radius:999px; background:var(--chip); border:1px solid var(--border); cursor:pointer; font-size:13px}
+.pill{padding:8px 10px; border-radius:999px; background:var(--chip); border:1px solid var(--border); cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:8px}
 .pill.active{box-shadow:0 0 0 1px var(--brand) inset; color:var(--brand)}
-.footer{margin:26px 0 60px; color:var(--muted); font-size:12px; text-align:center}
+.pill a{font-size:11px; margin-left:6px; opacity:.8; text-decoration:none; border-bottom:1px dashed rgba(255,255,255,.2); color:inherit}
+
+.footer{margin:26px 0 60px; color:var(--muted); font-size:11px; text-align:center; opacity:.7}
 .note{opacity:.8} .divider{height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:10px 0}
 `;
 
-function icon(t:string){
+function iconByType(t:string){
   const m:any = {
     new: '<path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     update: '<path d="M3 12a9 9 0 1 0 9-9v3M3 6v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
@@ -78,11 +131,16 @@ function icon(t:string){
   };
   return m[t] ?? m.update;
 }
-function color(t:string){
+function colorByType(t:string){
   const m:any = { new:'var(--accent)', update:'var(--brand)', feedback:'var(--warn)', fix:'var(--ok)'};
   return m[t] || 'var(--brand)';
 }
-function fmtDate(d:string){ const dt=new Date(d); const y=dt.getFullYear(); const m=String(dt.getMonth()+1).padStart(2,'0'); const day=String(dt.getDate()).padStart(2,'0'); const wd=['日','一','二','三','四','五','六'][dt.getDay()]; return `${y}年${m}月${day}日（周${wd}）`; }
+function fmtDate(d:string){
+  const dt=new Date(d);
+  const y=dt.getFullYear(); const m=String(dt.getMonth()+1).padStart(2,'0'); const day=String(dt.getDate()).padStart(2,'0');
+  const wd=['日','一','二','三','四','五','六'][dt.getDay()];
+  return `${y}年${m}月${day}日（周${wd}）`;
+}
 
 export default function Page(){
   const [brief, setBrief] = useState<Brief|null>(null);
@@ -100,10 +158,28 @@ export default function Page(){
 
   if (!brief) return <div style={{padding:20}}>加载中…</div>;
 
-  const counts = brief.items.reduce((acc:any,it)=>{acc[it.type]=(acc[it.type]||0)+1; return acc;},{});
+  const counts = brief.items.reduce((acc:any,it)=>{acc[it.type]=(acc[it.type]||0)+1; return acc;},{} as Record<string,number>);
   const total = brief.items.length;
   const allSources = new Map<string,string>();
   brief.items.forEach(it=> (it.sources||[]).forEach(s=> allSources.set(s.url, s.name)) );
+
+  // 顶部导航：增加「归档」入口
+  const Nav = () => (
+    <div className="actions">
+      <a className="btn" href="/archive">归档</a>
+      <button className="btn" onClick={()=>setThemeLight(v=>!v)}>切换主题</button>
+      <button className="btn" onClick={()=>{
+        const lines = [`## ${fmtDate(brief.date)} AI 产品每日简报`, `**要点**：${brief.headline}`, '', ...brief.items.map(it=>`- **${it.product}** [${it.type.toUpperCase()}] ${it.summary}`)];
+        navigator.clipboard.writeText(lines.join('\n'));
+      }}>复制为 Markdown</button>
+      <button className="btn" onClick={()=>{
+        const blob = new Blob([document.documentElement.outerHTML], {type:'text/html;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `AI-brief-${brief.date?.replace(/-/g,'')}.html`; a.click(); URL.revokeObjectURL(url);
+      }}>导出 HTML</button>
+    </div>
+  );
 
   return (
     <div className={themeLight ? 'light' : ''}>
@@ -117,40 +193,39 @@ export default function Page(){
               <div className="subtitle"><span className="date">{fmtDate(brief.date||new Date().toISOString())}</span> · 自动生成 · 科技感样式</div>
             </div>
           </div>
-          <div className="actions">
-            <button className="btn" onClick={()=>setThemeLight(v=>!v)}>切换主题</button>
-            <button className="btn" onClick={()=>{
-              const lines = [`## ${fmtDate(brief.date)} AI 产品每日简报`, `**要点**：${brief.headline}`, '', ...brief.items.map(it=>`- **${it.product}** [${it.type.toUpperCase()}] ${it.summary}`)];
-              navigator.clipboard.writeText(lines.join('\n'));
-            }}>复制为 Markdown</button>
-            <button className="btn" onClick={()=>{
-              const blob = new Blob([document.documentElement.outerHTML], {type:'text/html;charset=utf-8'});
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url; a.download = `AI-brief-${brief.date?.replace(/-/g,'')}.html`; a.click(); URL.revokeObjectURL(url);
-            }}>导出 HTML</button>
-          </div>
+          <Nav />
         </header>
 
         <section className="hero">
           <div>
             <h1>今日要点 · <span>{brief.headline || '—'}</span></h1>
-            <p className="note">聚焦第一梯队：OpenAI / Anthropic / Google / Meta / Mistral / xAI / Microsoft / 百度 / 阿里 / 字节 / 讯飞 / Kimi。</p>
-            <div className="kpis">
-              {[
-                {n: total, t:'今日条目'},
-                {n: counts.new||0, t:'新发布 NEW'},
-                {n: counts.update||0, t:'功能更新 UPDATE'},
-                {n: counts.feedback||0, t:'反馈 FEEDBACK'},
-                {n: counts.fix||0, t:'修复 FIX'},
-              ].map((k,i)=>(<div className="kpi" key={i}><div className="n">{k.n}</div><div className="t">{k.t}</div></div>))}
+            <div className="kpis" style={{marginTop:0}}>
+              {[{n: total, t:'今日条目'},{n: counts.new||0, t:'新发布'},{n: counts.update||0, t:'功能更新'},{n: counts.feedback||0, t:'反馈'},{n: counts.fix||0, t:'修复'}]
+                .map((k,i)=>(<div className="kpi" key={i}><div className="n">{k.n}</div><div className="t">{k.t}</div></div>))}
             </div>
           </div>
+
           <div className="card" style={{padding:'14px'}}>
+            {/* ✅ 带 LOGO 的筛选器；每个产品附“历史”链接 */}
             <div className="filterbar">
-              {['全部', ...products].map(p=> (
-                <button key={p} className={`pill ${filter===p?'active':''}`} onClick={()=>setFilter(p)} data-prod={p}>{p}</button>
-              ))}
+              {['全部', ...products].map(p=> {
+                const meta = PRODUCT_META[p] || { label: p, icon: <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="currentColor"/></svg> };
+                const href = `/history/${encodeURIComponent(p)}`;
+                return (
+                  <div key={p} style={{display:'inline-flex', alignItems:'center', gap:8}}>
+                    <button
+                      className={`pill ${filter===p?'active':''}`}
+                      onClick={()=>setFilter(p)}
+                      data-prod={p}
+                      title={`筛选：${meta.label}`}
+                    >
+                      <span style={{display:'grid',placeItems:'center'}}>{meta.icon}</span>
+                      <span>{meta.label}</span>
+                    </button>
+                    {p!=='全部' && <a className="pill" href={href} title={`查看 ${meta.label} 历史`} style={{padding:'6px 8px'}}>历史</a>}
+                  </div>
+                );
+              })}
             </div>
             <div className="divider"></div>
             <div className="tags">
@@ -170,13 +245,14 @@ export default function Page(){
                 <div className="feed">
                   {items.map((it,idx)=> (
                     <div className="item" key={idx}>
-                      <div className="ico" style={{color: color(it.type)}}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" dangerouslySetInnerHTML={{__html: icon(it.type)}}/>
+                      <div className="ico" style={{color: colorByType(it.type)}}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" dangerouslySetInnerHTML={{__html: iconByType(it.type)}}/>
                       </div>
                       <div>
                         <div style={{display:'flex', alignItems:'center', gap:10, flexWrap:'wrap', marginBottom:4}}>
                           <span className="prod">{it.product}</span>
                           <span className="chg" data-type={it.type}>{it.type.toUpperCase()}</span>
+                          <a className="tag" href={`/history/${encodeURIComponent(it.product)}`}>历史</a>
                         </div>
                         <div className="desc">{it.summary}</div>
                         <div className="tags" style={{marginTop:8}}>
@@ -190,9 +266,10 @@ export default function Page(){
               </div>
             </div>
           </div>
+
           <div className="col-4">
             <div className="card" style={{marginBottom:16}}>
-              <div className="hd"><h3>来源与参考</h3></div>
+              <div className="hd"><h3>来源与参考</h3><a className="btn" href="/archive">查看归档</a></div>
               <div className="bd">
                 <div className="sources">
                   {Array.from(allSources).map(([url,name])=> (<a className="src" key={url} href={url} target="_blank" rel="noreferrer noopener">{name}</a>))}
@@ -200,18 +277,18 @@ export default function Page(){
               </div>
             </div>
             <div className="card">
-              <div className="hd"><h3>使用说明</h3></div>
+              <div className="hd"><h3>关于</h3></div>
               <div className="bd">
-                <ol style={{margin:'0 0 8px 18px', padding:0}}>
-                  <li>本页从 <code>/api/brief</code> 读取当日简报 JSON。</li>
-                  <li>后端由 Vercel Cron 每天 9:00 JST 生成并写入 KV。</li>
-                  <li>可复制 Markdown 或导出 HTML；打印自动优化。</li>
-                </ol>
-                <div className="note">如需自定义品牌色/Logo，请修改样式变量或插入图片。</div>
+                <div className="note">本页从 <code>/api/brief</code> 读取当日简报；后端由 Vercel Cron 每天 9:00 JST 生成并写入 KV。</div>
               </div>
             </div>
           </div>
         </section>
+
+        {/* ✅ 页脚注脚（很小的字） */}
+        <div className="footer">
+          注：本页面自动汇总公开来源的更新信息，仅用于学习与研究，不构成任何商业承诺或投资建议。
+        </div>
       </div>
     </div>
   );

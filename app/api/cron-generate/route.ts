@@ -78,6 +78,10 @@ export async function GET() {
     await redis.set('brief:latest', data);
     await redis.set(`brief:${data.date}`, data);
 
+    // ✅ 新增：把日期加入有序集合，按时间排序（score=当天 00:00 的 UNIX 时间）
+    const ts = Math.floor(new Date(data.date + 'T00:00:00Z').getTime() / 1000);
+    await redis.zadd('brief:index', { score: ts, member: data.date });
+
     return NextResponse.json({ ok: true, count: data.items.length, date: data.date });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message ?? 'failed' }, { status: 500 });
