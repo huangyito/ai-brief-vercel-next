@@ -207,12 +207,6 @@ export default function Page(){
   // 顶部导航：增加「归档」入口
   const Nav = () => (
     <div className="actions">
-      <a className="btn" href="/archive" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 7v10a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
-          <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
-        </svg>
-      </a>
       <button className="btn" onClick={()=>{
         const lines = [`## ${fmtDate(brief.date)} AI 产品每日简报`, `**要点**：${brief.headline}`, '', ...brief.items.map(it=>`- **${it.product}** [${it.type.toUpperCase()}] ${it.summary}`)];
         navigator.clipboard.writeText(lines.join('\n'));
@@ -239,6 +233,12 @@ export default function Page(){
                 <h1>今日要点</h1>
               </div>
               <div className="hero-actions">
+                <a className="btn-icon" href="/archive" title="查看归档">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 7v10a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
+                    <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
+                  </svg>
+                </a>
                 <ThemeToggle />
               </div>
             </div>
