@@ -37,7 +37,11 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
     bgImage.crossOrigin = 'anonymous';
     bgImage.src = '/photo/Background.webp';
     
+    // 添加加载状态提示
+    console.log('开始加载背景图片...');
+    
     bgImage.onload = () => {
+      console.log('背景图片加载成功，开始绘制...');
       // 绘制背景图片（包含标题、二维码、版权信息等）
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
       
@@ -122,6 +126,7 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
       
       // 导出图片
       const filename = `AI-brief-${brief?.date?.replace(/-/g,'') || 'preview'}.png`;
+      console.log('开始导出图片:', filename);
       const imageData = canvas.toDataURL('image/png');
       onDownload?.(filename);
       
@@ -130,18 +135,114 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
       link.download = filename;
       link.href = imageData;
       link.click();
+      console.log('图片导出完成');
     };
     
     bgImage.onerror = () => {
+      console.error('背景图片加载失败，使用纯色背景');
       // 如果背景图片加载失败，使用纯色背景
       ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      console.warn('背景图片加载失败，使用纯色背景');
+      
+      // 绘制纯色背景下的内容
+      drawContentWithoutBackground(ctx, colors, brief, counts, canvas.width, canvas.height);
+      
+      // 导出纯色背景的图片
+      const filename = `AI-brief-${brief?.date?.replace(/-/g,'') || 'preview'}.png`;
+      console.log('导出纯色背景图片:', filename);
+      const imageData = canvas.toDataURL('image/png');
+      onDownload?.(filename);
+      
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = imageData;
+      link.click();
+      console.log('纯色背景图片导出完成');
     };
     
   } catch (error) {
     console.error('生成图片失败:', error);
     throw new Error('生成图片失败，请稍后重试');
+  }
+};
+
+// 绘制纯色背景下的内容
+const drawContentWithoutBackground = (ctx: CanvasRenderingContext2D, colors: any, brief: any, counts: any, width: number, height: number) => {
+  // 绘制日期
+  ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = colors.muted;
+  ctx.textAlign = 'center';
+  const date = brief?.date || new Date().toISOString();
+  ctx.fillText(formatDate(date), width / 2, 130);
+  
+  // 绘制要点
+  ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = colors.text;
+  ctx.fillText('今日要点', width / 2, 200);
+  
+  ctx.font = '28px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = colors.muted;
+  const headline = brief?.headline || '今日要点';
+  const maxWidth = width - 80;
+  if (ctx.measureText(headline).width > maxWidth) {
+    const words = headline.split('');
+    let line = '';
+    let y = 250;
+    for (let char of words) {
+      if (ctx.measureText(line + char).width > maxWidth) {
+        ctx.fillText(line, width / 2, y);
+        line = char;
+        y += 40;
+      } else {
+        line += char;
+      }
+    }
+    if (line) ctx.fillText(line, width / 2, y);
+  } else {
+    ctx.fillText(headline, width / 2, 250);
+  }
+  
+  // 绘制统计信息
+  ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = colors.text;
+  ctx.fillText('今日统计', width / 2, 350);
+  
+  ctx.font = '24px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = colors.muted;
+  const statsText = `条目: ${brief?.items.length || 0} | 新发布: ${counts?.new || 0} | 更新: ${counts?.update || 0}`;
+  ctx.fillText(statsText, width / 2, 380);
+  
+  // 绘制项目列表
+  let yPos = 450;
+  const maxItems = Math.min(6, brief?.items.length || 0);
+  
+  for (let i = 0; i < maxItems; i++) {
+    const item = brief.items[i];
+    
+    ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = colors.brand;
+    ctx.textAlign = 'left';
+    ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 60, yPos);
+    
+    ctx.font = '20px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = colors.text;
+    const maxDescWidth = width - 120;
+    let desc = item.summary;
+    if (ctx.measureText(desc).width > maxDescWidth) {
+      desc = desc.substring(0, 50) + '...';
+    }
+    ctx.fillText(desc, 60, yPos + 30);
+    
+    if (i < maxItems - 1) {
+      ctx.strokeStyle = colors.muted;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(60, yPos + 50);
+      ctx.lineTo(width - 60, yPos + 50);
+      ctx.stroke();
+    }
+    
+    yPos += 80;
   }
 };
 

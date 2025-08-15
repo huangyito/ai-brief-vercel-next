@@ -195,6 +195,7 @@ export default function Page(){
 
   // 图片生成函数
   const generateImage = () => {
+    console.log('开始生成图片...', { themeLight, brief: !!brief, counts });
     try {
       generateAIBriefImage({
         themeLight,
