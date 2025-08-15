@@ -7,7 +7,7 @@ export function ThemeToggle() {
 
   return (
     <button 
-      className="theme-toggle" 
+      className="btn-icon" 
       onClick={toggleTheme}
       title={themeLight ? '切换到深色模式' : '切换到浅色模式'}
     >

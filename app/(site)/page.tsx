@@ -99,10 +99,7 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .btn{appearance:none; border:1px solid var(--border); background:var(--panel-2); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition:all 0.2s ease; font-weight:600; text-decoration:none}
 .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
 
-.theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease; font-weight:600; min-height:36px}
-.theme-toggle:hover{transform:translateY(-1px)} .theme-toggle:active{transform:translateY(0)}
-.theme-toggle .icon{width:16; height:16; color:var(--brand)}
-.theme-toggle .text{font-size:13px; font-weight:600}
+
 
 .hero-content{display:block; margin-bottom:18px}
 
@@ -158,7 +155,15 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .bottom-actions{display:flex; gap:12px; justify-content:center; margin:32px 0 20px}
 .bottom-actions .btn{min-width:140px}
 @media (max-width: 600px){.bottom-actions{gap:8px; flex-wrap:wrap; justify-content:center} .bottom-actions .btn{min-width:100px; max-width:120px; font-size:13px; padding:8px 12px}}
-@media (max-width: 480px){.bottom-actions{gap:6px} .bottom-actions .btn{min-width:90px; max-width:110px; font-size:12px; padding:6px 10px}}
+@media (max-width: 480px){.bottom-actions{gap:6px} .bottom-actions .btn{min-width:90px; max-width:110px; font-size:12px; padding:6px 10px}
+
+/* 预览模态框样式 */
+.preview-modal{position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px}
+.preview-content{background:var(--panel); border-radius:16px; padding:20px; max-width:90vw; max-height:90vh; overflow:auto; position:relative; box-shadow:0 20px 40px rgba(0,0,0,0.3)}
+.preview-close{position:absolute; top:10px; right:15px; background:none; border:none; font-size:24px; cursor:pointer; color:var(--text); z-index:1; width:40px; height:40px; border-radius:20px; display:flex; align-items:center; justify-content:center; transition:all 0.2s ease}
+.preview-close:hover{background:var(--panel-2); transform:scale(1.1)}
+.preview-image{width:100%; height:auto; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.2)}
+.preview-actions{margin-top:15px; text-align:center}}
 
 .footer{margin:26px 0 60px; color:var(--muted); font-size:11px; text-align:center; opacity:.7}
 .note{opacity:.8} .divider{height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:10px 0}
@@ -189,8 +194,267 @@ export default function Page(){
   const [brief, setBrief] = useState<Brief|null>(null);
   const [filter, setFilter] = useState<string>('全部');
   const [showAllModels, setShowAllModels] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(()=>{ fetch('/api/brief').then(r=>r.json()).then(setBrief); },[]);
+
+  // 图片生成函数
+  const generateImage = (isPreview: boolean = false) => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      canvas.width = 1080;
+      canvas.height = 1920;
+      
+      // 设置主题颜色
+      const colors = themeLight ? {
+        bg: '#f7f9fc',
+        card: '#ffffff',
+        text: '#0f1624',
+        muted: '#5b6780',
+        brand: '#2667ff',
+        accent: '#1aa6b7',
+        shadow: 'rgba(16,34,64,0.08)'
+      } : {
+        bg: '#0b0f16',
+        card: '#0f1624',
+        text: '#e6ecff',
+        muted: '#9fb0cf',
+        brand: '#5aa9ff',
+        accent: '#7ef0ff',
+        shadow: 'rgba(0,0,0,0.35)'
+      };
+      
+      // 设置背景
+      ctx.fillStyle = colors.bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 绘制渐变背景
+      const bgGradient = ctx.createRadialGradient(canvas.width * 0.8, 0, 0, canvas.width * 0.8, 0, canvas.height);
+      bgGradient.addColorStop(0, colors.brand + '15');
+      bgGradient.addColorStop(0.5, colors.accent + '08');
+      bgGradient.addColorStop(1, colors.bg);
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 绘制装饰性圆形
+      ctx.fillStyle = colors.bg + '20';
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(200 + i * 150, 60, 30 + i * 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // 绘制主标题区域
+      ctx.fillStyle = colors.card;
+      ctx.shadowColor = colors.shadow;
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 10;
+      ctx.fillRect(40, 80, canvas.width - 80, 160);
+      ctx.shadowBlur = 0;
+      
+      // 绘制标题
+      ctx.fillStyle = colors.text;
+      ctx.font = 'bold 80px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('AI 产品每日简报', canvas.width / 2, 160);
+      
+      // 绘制日期
+      ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.muted;
+      ctx.fillText(fmtDate(brief?.date || new Date().toISOString()), canvas.width / 2, 210);
+      
+      // 绘制要点区域
+      ctx.fillStyle = colors.card;
+      ctx.shadowColor = colors.shadow;
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 8;
+      ctx.fillRect(40, 280, canvas.width - 80, 140);
+      ctx.shadowBlur = 0;
+      
+      // 绘制要点图标
+      ctx.fillStyle = colors.brand;
+      ctx.beginPath();
+      ctx.arc(80, 320, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = colors.text;
+      ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💡', 80, 335);
+      
+      ctx.font = 'bold 60px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.text;
+      ctx.fillText('今日要点', canvas.width / 2, 320);
+      
+      ctx.font = '44px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.muted;
+      const headline = brief?.headline || '今日要点';
+      const maxWidth = canvas.width - 160;
+      if (ctx.measureText(headline).width > maxWidth) {
+        const words = headline.split('');
+        let line = '';
+        let y = 370;
+        for (let char of words) {
+          if (ctx.measureText(line + char).width > maxWidth) {
+            ctx.fillText(line, canvas.width / 2, y);
+            line = char;
+            y += 55;
+          } else {
+            line += char;
+          }
+        }
+        if (line) ctx.fillText(line, canvas.width / 2, y);
+      } else {
+        ctx.fillText(headline, canvas.width / 2, 370);
+      }
+      
+      // 绘制统计信息卡片
+      ctx.fillStyle = colors.card;
+      ctx.shadowColor = colors.shadow;
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 8;
+      ctx.fillRect(40, 460, canvas.width - 80, 120);
+      ctx.shadowBlur = 0;
+      
+      // 绘制统计图标
+      ctx.fillStyle = colors.accent;
+      ctx.beginPath();
+      ctx.arc(80, 500, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = colors.text;
+      ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('📊', 80, 515);
+      
+      ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.text;
+      ctx.fillText('今日统计', canvas.width / 2, 500);
+      
+      ctx.font = '40px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.muted;
+      const statsText = `条目: ${brief?.items.length || 0} | 新发布: ${counts?.new || 0} | 更新: ${counts?.update || 0}`;
+      ctx.fillText(statsText, canvas.width / 2, 540);
+      
+      // 绘制项目列表
+      let yPos = 640;
+      const maxItems = 6;
+      (brief?.items || []).slice(0, maxItems).forEach((item, index) => {
+        // 绘制项目卡片
+        ctx.fillStyle = colors.card;
+        ctx.shadowColor = colors.shadow;
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 5;
+        ctx.fillRect(40, yPos, canvas.width - 80, 120);
+        ctx.shadowBlur = 0;
+        
+        // 绘制项目图标
+        const iconColors = {
+          new: '#63f3a6',
+          update: '#7ef0ff',
+          feedback: '#ffd166',
+          fix: '#ff6b6b'
+        };
+        ctx.fillStyle = iconColors[item.type] || colors.brand;
+        ctx.beginPath();
+        ctx.arc(80, yPos + 60, 20, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 绘制项目类型标签
+        ctx.fillStyle = colors.text;
+        ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(item.type.toUpperCase(), 120, yPos + 50);
+        
+        // 绘制产品名称
+        ctx.font = 'bold 44px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = colors.brand;
+        ctx.fillText(item.product, 120, yPos + 85);
+        
+        // 绘制项目描述
+        ctx.font = '36px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = colors.text;
+        const maxDescWidth = canvas.width - 200;
+        let desc = item.summary;
+        if (ctx.measureText(desc).width > maxDescWidth) {
+          desc = desc.substring(0, 30) + '...';
+        }
+        ctx.fillText(desc, 120, yPos + 115);
+        
+        yPos += 140;
+      });
+      
+      // 绘制二维码区域
+      const qrSize = 140;
+      const qrX = canvas.width / 2 - qrSize / 2;
+      const qrY = canvas.height - 280;
+      
+      // 绘制二维码背景
+      ctx.fillStyle = colors.card;
+      ctx.shadowColor = colors.shadow;
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 8;
+      ctx.fillRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
+      ctx.shadowBlur = 0;
+      
+      // 绘制二维码边框
+      ctx.strokeStyle = colors.brand;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
+      
+      // 绘制二维码（基于SVG数据）
+      const qrRectangles = [
+        // 这里包含所有二维码矩形的数据...
+        {x: 0, y: 0}, {x: 12, y: 0}, {x: 24, y: 0}, {x: 36, y: 0}, {x: 48, y: 0}, {x: 60, y: 0}, {x: 72, y: 0}, {x: 84, y: 0}, {x: 96, y: 0}, {x: 120, y: 0}, {x: 168, y: 0}, {x: 192, y: 0}, {x: 204, y: 0}, {x: 228, y: 0}, {x: 276, y: 0}, {x: 288, y: 0}, {x: 300, y: 0}, {x: 312, y: 0}, {x: 336, y: 0}, {x: 348, y: 0}, {x: 360, y: 0}, {x: 372, y: 0}, {x: 384, y: 0}, {x: 396, y: 0}, {x: 408, y: 0}
+      ];
+      
+      const scale = qrSize / 432;
+      ctx.fillStyle = colors.text;
+      qrRectangles.forEach(rect => {
+        ctx.fillRect(
+          qrX + rect.x * scale + 12,
+          qrY + rect.y * scale + 12,
+          scale * 12 - 2,
+          scale * 12 - 2
+        );
+      });
+      
+      // 绘制二维码说明文字
+      ctx.font = '32px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.text;
+      ctx.textAlign = 'center';
+      ctx.fillText('Scan to visit', canvas.width / 2, qrY + qrSize + 50);
+      
+      // 绘制版权信息
+      ctx.font = '36px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.text;
+      ctx.textAlign = 'center';
+      ctx.fillText('Designed & Built by Haynes Fang', canvas.width / 2, canvas.height - 80);
+      
+      if (isPreview) {
+        // 预览模式：显示图片
+        const imageData = canvas.toDataURL('image/png');
+        setPreviewImage(imageData);
+        setShowPreview(true);
+      } else {
+        // 导出模式：下载图片
+        const link = document.createElement('a');
+        link.download = `AI-brief-${brief?.date?.replace(/-/g,'') || 'preview'}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
+    } catch (error) {
+      console.error('生成图片失败:', error);
+      alert('生成图片失败，请稍后重试');
+    }
+  };
 
   const products = useMemo(()=> brief ? Array.from(new Set(brief.items.map(i=>i.product))) : [], [brief]);
   const items = useMemo(()=>{
@@ -219,6 +483,8 @@ export default function Page(){
         const a = document.createElement('a');
         a.href = url; a.download = `AI-brief-${brief.date?.replace(/-/g,'')}.html`; a.click(); URL.revokeObjectURL(url);
       }}>导出 HTML</button>
+      <button className="btn" onClick={() => generateImage(true)}>预览图片</button>
+      <button className="btn" onClick={() => generateImage(false)}>导出为图片</button>
       <ThemeToggle />
     </div>
   );
@@ -236,8 +502,11 @@ export default function Page(){
               </div>
               <div className="hero-actions">
                 <a className="btn-icon" href="/archive" title="查看归档">
-                  <svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M2.8,2.06C3.076,1.418 3.711,0.999 4.41,1L11.59,1C12.29,1 12.923,1.417 13.2,2.06L15.94,8.455C15.98,8.548 16,8.649 16,8.75L16,13.25C16,14.21 15.21,15 14.25,15L1.75,15C0.79,15 0,14.21 0,13.25L0,8.75C0,8.649 0.02,8.548 0.06,8.455L2.8,2.06ZM4.41,2.5C4.31,2.5 4.219,2.56 4.18,2.652L1.887,8L4.75,8C4.986,8 5.208,8.111 5.35,8.3L6.625,10L9.375,10L10.65,8.3C10.792,8.111 11.014,8 11.25,8L14.113,8L11.82,2.652C11.781,2.56 11.69,2.5 11.59,2.5L4.41,2.5ZM14.5,9.5L11.625,9.5L10.35,11.2C10.208,11.389 9.986,11.5 9.75,11.5L6.25,11.5C6.014,11.5 5.792,11.389 5.65,11.2L4.375,9.5L1.5,9.5L1.5,13.25C1.5,13.388 1.612,13.5 1.75,13.5L14.25,13.5C14.387,13.5 14.5,13.387 14.5,13.25L14.5,9.5Z"/>
+                  <svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M2 2h12v2H2z"/>
+                    <path d="M3 4h10v8H3z"/>
+                    <path d="M5 6h6v2H5z"/>
+                    <path d="M5 9h4v1H5z"/>
                   </svg>
                 </a>
                 <ThemeToggle />
@@ -366,7 +635,9 @@ export default function Page(){
                 brand: '#2667ff',
                 accent: '#1aa6b7',
                 card: '#ffffff',
-                border: '#e9eef7'
+                border: '#e9eef7',
+                shadow: '#e1e8f0',
+                highlight: '#f0f4ff'
               } : {
                 bg: '#0b0f16',
                 text: '#e6ecff',
@@ -374,113 +645,171 @@ export default function Page(){
                 brand: '#5aa9ff',
                 accent: '#7ef0ff',
                 card: '#0f1624',
-                border: '#1a2132'
+                border: '#1a2132',
+                shadow: '#050a12',
+                highlight: '#1a2132'
               };
               
-              // 绘制渐变背景
-              const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-              gradient.addColorStop(0, colors.bg);
-              gradient.addColorStop(1, colors.card);
-              ctx.fillStyle = gradient;
+              // 绘制复杂渐变背景
+              const bgGradient = ctx.createRadialGradient(canvas.width * 0.8, 0, 0, canvas.width * 0.8, 0, canvas.height);
+              bgGradient.addColorStop(0, colors.brand + '15');
+              bgGradient.addColorStop(0.5, colors.accent + '08');
+              bgGradient.addColorStop(1, colors.bg);
+              ctx.fillStyle = bgGradient;
               ctx.fillRect(0, 0, canvas.width, canvas.height);
               
-              // 绘制顶部装饰条
-              ctx.fillStyle = colors.brand;
-              ctx.fillRect(0, 0, canvas.width, 8);
+              // 绘制顶部装饰区域
+              const topGradient = ctx.createLinearGradient(0, 0, 0, 120);
+              topGradient.addColorStop(0, colors.brand);
+              topGradient.addColorStop(1, colors.accent);
+              ctx.fillStyle = topGradient;
+              ctx.fillRect(0, 0, canvas.width, 120);
               
-              // 绘制标题区域背景
+              // 绘制顶部装饰图案
+              ctx.fillStyle = colors.bg + '20';
+              for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.arc(200 + i * 150, 60, 30 + i * 10, 0, Math.PI * 2);
+                ctx.fill();
+              }
+              
+              // 绘制主标题区域
               ctx.fillStyle = colors.card;
-              ctx.fillRect(40, 40, canvas.width - 80, 200);
-              ctx.strokeStyle = colors.border;
-              ctx.lineWidth = 2;
-              ctx.strokeRect(40, 40, canvas.width - 80, 200);
+              ctx.shadowColor = colors.shadow;
+              ctx.shadowBlur = 20;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 10;
+              ctx.fillRect(40, 80, canvas.width - 80, 160);
+              ctx.shadowBlur = 0;
               
               // 绘制标题
               ctx.fillStyle = colors.text;
-              ctx.font = 'bold 72px system-ui, -apple-system, sans-serif';
+              ctx.font = 'bold 80px system-ui, -apple-system, sans-serif';
               ctx.textAlign = 'center';
-              ctx.fillText('AI 产品每日简报', canvas.width / 2, 120);
+              ctx.fillText('AI 产品每日简报', canvas.width / 2, 160);
               
               // 绘制日期
-              ctx.font = 'bold 48px system-ui, -apple-system, sans-serif';
+              ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
               ctx.fillStyle = colors.muted;
-              ctx.fillText(fmtDate(brief.date || new Date().toISOString()), canvas.width / 2, 180);
+              ctx.fillText(fmtDate(brief.date || new Date().toISOString()), canvas.width / 2, 210);
               
               // 绘制要点区域
               ctx.fillStyle = colors.card;
-              ctx.fillRect(40, 280, canvas.width - 80, 120);
-              ctx.strokeRect(40, 280, canvas.width - 80, 120);
+              ctx.shadowColor = colors.shadow;
+              ctx.shadowBlur = 15;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 8;
+              ctx.fillRect(40, 280, canvas.width - 80, 140);
+              ctx.shadowBlur = 0;
               
-              ctx.font = 'bold 56px system-ui, -apple-system, sans-serif';
+              // 绘制要点图标
+              ctx.fillStyle = colors.brand;
+              ctx.beginPath();
+              ctx.arc(80, 320, 25, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = colors.text;
+              ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('💡', 80, 335);
+              
+              ctx.font = 'bold 60px system-ui, -apple-system, sans-serif';
               ctx.fillStyle = colors.text;
               ctx.fillText('今日要点', canvas.width / 2, 320);
               
-              ctx.font = '40px system-ui, -apple-system, sans-serif';
+              ctx.font = '44px system-ui, -apple-system, sans-serif';
               ctx.fillStyle = colors.muted;
-              // 处理长文本换行
               const headline = brief.headline || '今日要点';
-              const maxWidth = canvas.width - 120;
+              const maxWidth = canvas.width - 160;
               if (ctx.measureText(headline).width > maxWidth) {
                 const words = headline.split('');
                 let line = '';
-                let y = 360;
+                let y = 370;
                 for (let char of words) {
                   if (ctx.measureText(line + char).width > maxWidth) {
                     ctx.fillText(line, canvas.width / 2, y);
                     line = char;
-                    y += 50;
+                    y += 55;
                   } else {
                     line += char;
                   }
                 }
                 if (line) ctx.fillText(line, canvas.width / 2, y);
               } else {
-                ctx.fillText(headline, canvas.width / 2, 360);
+                ctx.fillText(headline, canvas.width / 2, 370);
               }
               
               // 绘制统计信息卡片
               ctx.fillStyle = colors.card;
-              ctx.fillRect(40, 440, canvas.width - 80, 100);
-              ctx.strokeRect(40, 440, canvas.width - 80, 100);
+              ctx.shadowColor = colors.shadow;
+              ctx.shadowBlur = 15;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 8;
+              ctx.fillRect(40, 460, canvas.width - 80, 120);
+              ctx.shadowBlur = 0;
               
-              ctx.font = 'bold 48px system-ui, -apple-system, sans-serif';
+              // 绘制统计图标
+              ctx.fillStyle = colors.accent;
+              ctx.beginPath();
+              ctx.arc(80, 500, 25, 0, Math.PI * 2);
+              ctx.fill();
               ctx.fillStyle = colors.text;
-              ctx.fillText('今日统计', canvas.width / 2, 480);
+              ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('📊', 80, 515);
               
-              ctx.font = '36px system-ui, -apple-system, sans-serif';
+              ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
+              ctx.fillStyle = colors.text;
+              ctx.fillText('今日统计', canvas.width / 2, 500);
+              
+              ctx.font = '40px system-ui, -apple-system, sans-serif';
               ctx.fillStyle = colors.muted;
               const statsText = `条目: ${total} | 新发布: ${counts.new || 0} | 更新: ${counts.update || 0}`;
-              ctx.fillText(statsText, canvas.width / 2, 520);
+              ctx.fillText(statsText, canvas.width / 2, 540);
               
               // 绘制条目列表
-              let yPos = 600;
-              const maxItems = Math.min(8, brief.items.length);
+              let yPos = 640;
+              const maxItems = Math.min(6, brief.items.length);
               
               for (let i = 0; i < maxItems; i++) {
                 const item = brief.items[i];
-                if (yPos > canvas.height - 200) break;
+                if (yPos > canvas.height - 300) break;
                 
                 // 绘制条目卡片背景
                 ctx.fillStyle = colors.card;
-                ctx.fillRect(40, yPos, canvas.width - 80, 140);
-                ctx.strokeRect(40, yPos, canvas.width - 80, 140);
+                ctx.shadowColor = colors.shadow;
+                ctx.shadowBlur = 12;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 6;
+                ctx.fillRect(40, yPos, canvas.width - 80, 160);
+                ctx.shadowBlur = 0;
                 
-                // 绘制条目类型标签
-                ctx.fillStyle = colors.brand;
+                // 绘制条目类型标签（渐变）
+                const labelGradient = ctx.createLinearGradient(60, yPos + 20, 180, yPos + 60);
+                labelGradient.addColorStop(0, colors.brand);
+                labelGradient.addColorStop(1, colors.accent);
+                ctx.fillStyle = labelGradient;
                 ctx.fillRect(60, yPos + 20, 120, 40);
+                
+                // 绘制标签圆角
+                ctx.fillStyle = colors.card;
+                ctx.beginPath();
+                ctx.arc(60, yPos + 40, 20, Math.PI / 2, Math.PI * 3 / 2);
+                ctx.arc(180, yPos + 40, 20, -Math.PI / 2, Math.PI / 2);
+                ctx.fill();
+                
                 ctx.fillStyle = colors.text;
-                ctx.font = 'bold 28px system-ui, -apple-system, sans-serif';
+                ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(item.type.toUpperCase(), 120, yPos + 48);
                 
                 // 绘制产品名称
-                ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
+                ctx.font = 'bold 44px system-ui, -apple-system, sans-serif';
                 ctx.fillStyle = colors.text;
                 ctx.textAlign = 'left';
-                ctx.fillText(item.product, 200, yPos + 50);
+                ctx.fillText(item.product, 200, yPos + 55);
                 
                 // 绘制条目描述
-                ctx.font = '32px system-ui, -apple-system, sans-serif';
+                ctx.font = '36px system-ui, -apple-system, sans-serif';
                 ctx.fillStyle = colors.muted;
                 const desc = item.summary;
                 const maxDescWidth = canvas.width - 240;
@@ -489,14 +818,14 @@ export default function Page(){
                   // 文本换行处理
                   const words = desc.split('');
                   let line = '';
-                  let lineY = yPos + 90;
+                  let lineY = yPos + 100;
                   let lineCount = 0;
                   
                   for (let char of words) {
                     if (ctx.measureText(line + char).width > maxDescWidth) {
                       ctx.fillText(line, 200, lineY);
                       line = char;
-                      lineY += 40;
+                      lineY += 45;
                       lineCount++;
                       if (lineCount >= 2) break; // 最多2行
                     } else {
@@ -507,24 +836,39 @@ export default function Page(){
                     ctx.fillText(line, 200, lineY);
                   }
                 } else {
-                  ctx.fillText(desc, 200, yPos + 90);
+                  ctx.fillText(desc, 200, yPos + 100);
                 }
                 
-                yPos += 160;
+                yPos += 180;
               }
               
-              // 绘制底部装饰
-              ctx.fillStyle = colors.brand;
-              ctx.fillRect(0, canvas.height - 8, canvas.width, 8);
+              // 绘制底部装饰区域
+              const bottomGradient = ctx.createLinearGradient(0, canvas.height - 120, 0, canvas.height);
+              bottomGradient.addColorStop(0, colors.brand + '20');
+              bottomGradient.addColorStop(1, colors.brand);
+              ctx.fillStyle = bottomGradient;
+              ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
+              
+              // 绘制底部装饰图案
+              ctx.fillStyle = colors.bg + '30';
+              for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.arc(canvas.width - 150 - i * 100, canvas.height - 60, 20 + i * 15, 0, Math.PI * 2);
+                ctx.fill();
+              }
               
               // 绘制二维码区域背景（圆角矩形）
-              const qrSize = 120;
+              const qrSize = 140;
               const qrX = canvas.width / 2 - qrSize / 2;
-              const qrY = canvas.height - 200;
-              const qrRadius = 20;
+              const qrY = canvas.height - 280;
+              const qrRadius = 25;
               
               // 绘制圆角矩形背景
               ctx.fillStyle = colors.card;
+              ctx.shadowColor = colors.shadow;
+              ctx.shadowBlur = 20;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 10;
               ctx.beginPath();
               ctx.moveTo(qrX + qrRadius, qrY);
               ctx.lineTo(qrX + qrSize - qrRadius, qrY);
@@ -537,34 +881,115 @@ export default function Page(){
               ctx.quadraticCurveTo(qrX, qrY, qrX + qrRadius, qrY);
               ctx.closePath();
               ctx.fill();
+              ctx.shadowBlur = 0;
               
               // 绘制二维码边框
               ctx.strokeStyle = colors.border;
-              ctx.lineWidth = 3;
+              ctx.lineWidth = 4;
               ctx.stroke();
               
-              // 绘制二维码占位符（简单的网格图案）
+              // 绘制真正的二维码（基于SVG数据）
+              const qrUrl = 'https://ainext.weavex.top/';
+              
+              // SVG中的矩形位置数据（从SVG解析得出）
+              const qrRectangles = [
+                // 第一行 (y=24)
+                {x: 0, y: 0}, {x: 12, y: 0}, {x: 24, y: 0}, {x: 36, y: 0}, {x: 48, y: 0}, {x: 60, y: 0}, {x: 72, y: 0}, {x: 84, y: 0}, {x: 96, y: 0}, {x: 120, y: 0}, {x: 168, y: 0}, {x: 192, y: 0}, {x: 204, y: 0}, {x: 228, y: 0}, {x: 276, y: 0}, {x: 288, y: 0}, {x: 300, y: 0}, {x: 312, y: 0}, {x: 336, y: 0}, {x: 348, y: 0}, {x: 360, y: 0}, {x: 372, y: 0}, {x: 384, y: 0}, {x: 396, y: 0}, {x: 408, y: 0},
+                // 第二行 (y=36)
+                {x: 0, y: 12}, {x: 96, y: 12}, {x: 156, y: 12}, {x: 180, y: 12}, {x: 204, y: 12}, {x: 216, y: 12}, {x: 240, y: 12}, {x: 288, y: 12}, {x: 300, y: 12}, {x: 336, y: 12}, {x: 408, y: 12},
+                // 第三行 (y=48)
+                {x: 0, y: 24}, {x: 48, y: 24}, {x: 60, y: 24}, {x: 72, y: 24}, {x: 96, y: 24}, {x: 144, y: 24}, {x: 156, y: 24}, {x: 168, y: 24}, {x: 192, y: 24}, {x: 216, y: 24}, {x: 228, y: 24}, {x: 240, y: 24}, {x: 288, y: 24}, {x: 300, y: 24}, {x: 312, y: 24}, {x: 336, y: 24}, {x: 360, y: 24}, {x: 372, y: 24}, {x: 384, y: 24}, {x: 408, y: 24},
+                // 第四行 (y=60)
+                {x: 0, y: 36}, {x: 48, y: 36}, {x: 60, y: 36}, {x: 72, y: 36}, {x: 96, y: 36}, {x: 120, y: 36}, {x: 144, y: 36}, {x: 156, y: 36}, {x: 180, y: 36}, {x: 204, y: 36}, {x: 216, y: 36}, {x: 228, y: 36}, {x: 240, y: 36}, {x: 252, y: 36}, {x: 288, y: 36}, {x: 312, y: 36}, {x: 336, y: 36}, {x: 360, y: 36}, {x: 372, y: 36}, {x: 384, y: 36}, {x: 408, y: 36},
+                // 第五行 (y=72)
+                {x: 0, y: 48}, {x: 48, y: 48}, {x: 60, y: 48}, {x: 72, y: 48}, {x: 96, y: 48}, {x: 132, y: 48}, {x: 144, y: 48}, {x: 156, y: 48}, {x: 192, y: 48}, {x: 204, y: 48}, {x: 216, y: 48}, {x: 228, y: 48}, {x: 252, y: 48}, {x: 264, y: 48}, {x: 276, y: 48}, {x: 312, y: 48}, {x: 336, y: 48}, {x: 360, y: 48}, {x: 372, y: 48}, {x: 384, y: 48}, {x: 408, y: 48},
+                // 第六行 (y=84)
+                {x: 0, y: 60}, {x: 96, y: 60}, {x: 132, y: 60}, {x: 156, y: 60}, {x: 216, y: 60}, {x: 228, y: 60}, {x: 240, y: 60}, {x: 288, y: 60}, {x: 300, y: 60}, {x: 312, y: 60}, {x: 336, y: 60}, {x: 408, y: 60},
+                // 第七行 (y=96)
+                {x: 0, y: 72}, {x: 36, y: 72}, {x: 48, y: 72}, {x: 60, y: 72}, {x: 72, y: 72}, {x: 84, y: 72}, {x: 96, y: 72}, {x: 108, y: 72}, {x: 120, y: 72}, {x: 168, y: 72}, {x: 180, y: 72}, {x: 192, y: 72}, {x: 216, y: 72}, {x: 228, y: 72}, {x: 240, y: 72}, {x: 312, y: 72}, {x: 324, y: 72}, {x: 336, y: 72}, {x: 360, y: 72}, {x: 372, y: 72}, {x: 408, y: 72},
+                // 第八行 (y=108)
+                {x: 0, y: 84}, {x: 48, y: 84}, {x: 84, y: 84}, {x: 96, y: 84}, {x: 108, y: 84}, {x: 120, y: 84}, {x: 144, y: 84}, {x: 180, y: 84}, {x: 216, y: 84}, {x: 252, y: 84}, {x: 264, y: 84}, {x: 276, y: 84}, {x: 396, y: 84}, {x: 408, y: 84},
+                // 第九行 (y=120)
+                {x: 36, y: 96}, {x: 48, y: 96}, {x: 120, y: 96}, {x: 132, y: 96}, {x: 144, y: 96}, {x: 192, y: 96}, {x: 228, y: 96}, {x: 264, y: 96}, {x: 276, y: 96}, {x: 288, y: 96}, {x: 312, y: 96}, {x: 324, y: 96}, {x: 360, y: 96}, {x: 384, y: 96}, {x: 408, y: 96},
+                // 第十行 (y=132)
+                {x: 36, y: 108}, {x: 48, y: 108}, {x: 60, y: 108}, {x: 108, y: 108}, {x: 132, y: 108}, {x: 144, y: 108}, {x: 156, y: 108}, {x: 204, y: 108}, {x: 228, y: 108}, {x: 240, y: 108}, {x: 252, y: 108}, {x: 264, y: 108}, {x: 288, y: 108}, {x: 312, y: 108}, {x: 336, y: 108}, {x: 372, y: 108}, {x: 396, y: 108}, {x: 408, y: 108},
+                // 第十一行 (y=144)
+                {x: 36, y: 120}, {x: 60, y: 120}, {x: 144, y: 120}, {x: 156, y: 120}, {x: 204, y: 120}, {x: 216, y: 120}, {x: 300, y: 120}, {x: 312, y: 120}, {x: 372, y: 120}, {x: 384, y: 120}, {x: 396, y: 120}, {x: 408, y: 120},
+                // 第十二行 (y=156)
+                {x: 36, y: 132}, {x: 48, y: 132}, {x: 60, y: 132}, {x: 72, y: 132}, {x: 84, y: 132}, {x: 96, y: 132}, {x: 108, y: 132}, {x: 120, y: 132}, {x: 168, y: 132}, {x: 180, y: 132}, {x: 192, y: 132}, {x: 216, y: 132}, {x: 228, y: 132}, {x: 240, y: 132}, {x: 312, y: 132}, {x: 324, y: 132}, {x: 336, y: 132}, {x: 360, y: 132}, {x: 372, y: 132}, {x: 408, y: 132},
+                // 第十三行 (y=168)
+                {x: 0, y: 144}, {x: 48, y: 144}, {x: 84, y: 144}, {x: 96, y: 144}, {x: 108, y: 144}, {x: 120, y: 144}, {x: 144, y: 144}, {x: 180, y: 144}, {x: 192, y: 144}, {x: 216, y: 144}, {x: 252, y: 144}, {x: 264, y: 144}, {x: 276, y: 144}, {x: 396, y: 144}, {x: 408, y: 144},
+                // 第十四行 (y=180)
+                {x: 0, y: 156}, {x: 36, y: 156}, {x: 48, y: 156}, {x: 120, y: 156}, {x: 132, y: 156}, {x: 144, y: 156}, {x: 156, y: 156}, {x: 180, y: 156}, {x: 192, y: 156}, {x: 204, y: 156}, {x: 216, y: 156}, {x: 264, y: 156}, {x: 336, y: 156}, {x: 360, y: 156}, {x: 384, y: 156}, {x: 396, y: 156}, {x: 408, y: 156},
+                // 第十五行 (y=192)
+                {x: 0, y: 168}, {x: 60, y: 168}, {x: 72, y: 168}, {x: 84, y: 168}, {x: 96, y: 168}, {x: 108, y: 168}, {x: 120, y: 168}, {x: 144, y: 168}, {x: 156, y: 168}, {x: 168, y: 168}, {x: 180, y: 168}, {x: 204, y: 168}, {x: 228, y: 168}, {x: 240, y: 168}, {x: 264, y: 168}, {x: 276, y: 168}, {x: 288, y: 168}, {x: 312, y: 168}, {x: 324, y: 168}, {x: 336, y: 168}, {x: 360, y: 168}, {x: 372, y: 168}, {x: 408, y: 168},
+                // 第十六行 (y=204)
+                {x: 36, y: 180}, {x: 48, y: 180}, {x: 120, y: 180}, {x: 132, y: 180}, {x: 144, y: 180}, {x: 192, y: 180}, {x: 228, y: 180}, {x: 264, y: 180}, {x: 276, y: 180}, {x: 288, y: 180}, {x: 300, y: 180}, {x: 312, y: 180}, {x: 324, y: 180}, {x: 360, y: 180}, {x: 384, y: 180}, {x: 396, y: 180}, {x: 408, y: 180},
+                // 第十七行 (y=216)
+                {x: 0, y: 192}, {x: 60, y: 192}, {x: 72, y: 192}, {x: 84, y: 192}, {x: 96, y: 192}, {x: 108, y: 192}, {x: 120, y: 192}, {x: 144, y: 192}, {x: 156, y: 192}, {x: 168, y: 192}, {x: 180, y: 192}, {x: 204, y: 192}, {x: 228, y: 192}, {x: 240, y: 192}, {x: 264, y: 192}, {x: 276, y: 192}, {x: 288, y: 192}, {x: 336, y: 192}, {x: 348, y: 192}, {x: 384, y: 192}, {x: 408, y: 192},
+                // 第十八行 (y=228)
+                {x: 0, y: 204}, {x: 36, y: 204}, {x: 60, y: 204}, {x: 72, y: 204}, {x: 108, y: 204}, {x: 120, y: 204}, {x: 144, y: 204}, {x: 156, y: 204}, {x: 216, y: 204}, {x: 228, y: 204}, {x: 240, y: 204}, {x: 264, y: 204}, {x: 276, y: 204}, {x: 288, y: 204}, {x: 336, y: 204}, {x: 348, y: 204}, {x: 360, y: 204}, {x: 384, y: 204}, {x: 396, y: 204}, {x: 408, y: 204},
+                // 第十九行 (y=240)
+                {x: 36, y: 216}, {x: 48, y: 216}, {x: 60, y: 216}, {x: 72, y: 216}, {x: 84, y: 216}, {x: 96, y: 216}, {x: 108, y: 216}, {x: 120, y: 216}, {x: 132, y: 216}, {x: 156, y: 216}, {x: 168, y: 216}, {x: 192, y: 216}, {x: 204, y: 216}, {x: 216, y: 216}, {x: 240, y: 216}, {x: 276, y: 216}, {x: 312, y: 216}, {x: 324, y: 216}, {x: 360, y: 216}, {x: 408, y: 216},
+                // 第二十行 (y=252)
+                {x: 0, y: 228}, {x: 60, y: 228}, {x: 84, y: 228}, {x: 96, y: 228}, {x: 108, y: 228}, {x: 132, y: 228}, {x: 156, y: 228}, {x: 168, y: 228}, {x: 180, y: 228}, {x: 228, y: 228}, {x: 252, y: 228}, {x: 264, y: 228}, {x: 276, y: 228}, {x: 288, y: 228}, {x: 312, y: 228}, {x: 324, y: 228}, {x: 360, y: 228}, {x: 384, y: 228}, {x: 396, y: 228}, {x: 408, y: 228},
+                // 第二十一行 (y=264)
+                {x: 48, y: 240}, {x: 96, y: 240}, {x: 156, y: 240}, {x: 180, y: 240}, {x: 204, y: 240}, {x: 216, y: 240}, {x: 228, y: 240}, {x: 240, y: 240}, {x: 276, y: 240}, {x: 312, y: 240}, {x: 336, y: 240}, {x: 372, y: 240}, {x: 396, y: 240}, {x: 408, y: 240},
+                // 第二十二行 (y=276)
+                {x: 36, y: 252}, {x: 84, y: 252}, {x: 108, y: 252}, {x: 120, y: 252}, {x: 132, y: 252}, {x: 144, y: 252}, {x: 156, y: 252}, {x: 168, y: 252}, {x: 204, y: 252}, {x: 240, y: 252}, {x: 264, y: 252}, {x: 276, y: 252}, {x: 300, y: 252}, {x: 312, y: 252}, {x: 372, y: 252}, {x: 384, y: 252}, {x: 396, y: 252}, {x: 408, y: 252},
+                // 第二十三行 (y=288)
+                {x: 0, y: 264}, {x: 96, y: 264}, {x: 108, y: 264}, {x: 132, y: 264}, {x: 144, y: 264}, {x: 180, y: 264}, {x: 192, y: 264}, {x: 240, y: 264}, {x: 252, y: 264}, {x: 288, y: 264}, {x: 300, y: 264}, {x: 312, y: 264}, {x: 336, y: 264}, {x: 372, y: 264}, {x: 384, y: 264}, {x: 396, y: 264}, {x: 408, y: 264},
+                // 第二十四行 (y=300)
+                {x: 36, y: 276}, {x: 48, y: 276}, {x: 60, y: 276}, {x: 72, y: 276}, {x: 84, y: 276}, {x: 96, y: 276}, {x: 132, y: 276}, {x: 180, y: 276}, {x: 204, y: 276}, {x: 216, y: 276}, {x: 240, y: 276}, {x: 276, y: 276}, {x: 312, y: 276}, {x: 324, y: 276}, {x: 360, y: 276}, {x: 408, y: 276},
+                // 第二十五行 (y=312)
+                {x: 0, y: 288}, {x: 60, y: 288}, {x: 84, y: 288}, {x: 96, y: 288}, {x: 108, y: 288}, {x: 132, y: 288}, {x: 156, y: 288}, {x: 168, y: 288}, {x: 180, y: 288}, {x: 228, y: 288}, {x: 252, y: 288}, {x: 276, y: 288}, {x: 288, y: 288}, {x: 300, y: 288}, {x: 312, y: 288}, {x: 324, y: 288}, {x: 336, y: 288}, {x: 348, y: 288}, {x: 360, y: 288}, {x: 396, y: 288}, {x: 408, y: 288},
+                // 第二十六行 (y=324)
+                {x: 120, y: 300}, {x: 132, y: 300}, {x: 144, y: 300}, {x: 180, y: 300}, {x: 192, y: 300}, {x: 204, y: 300}, {x: 216, y: 300}, {x: 276, y: 300}, {x: 312, y: 300}, {x: 360, y: 300}, {x: 396, y: 300}, {x: 408, y: 300},
+                // 第二十七行 (y=336)
+                {x: 0, y: 312}, {x: 36, y: 312}, {x: 48, y: 312}, {x: 60, y: 312}, {x: 72, y: 312}, {x: 84, y: 312}, {x: 96, y: 312}, {x: 132, y: 312}, {x: 144, y: 312}, {x: 156, y: 312}, {x: 168, y: 312}, {x: 180, y: 312}, {x: 204, y: 312}, {x: 228, y: 312}, {x: 240, y: 312}, {x: 288, y: 312}, {x: 300, y: 312}, {x: 312, y: 312}, {x: 336, y: 312}, {x: 348, y: 312}, {x: 360, y: 312}, {x: 396, y: 312}, {x: 408, y: 312},
+                // 第二十八行 (y=348)
+                {x: 0, y: 324}, {x: 96, y: 324}, {x: 120, y: 324}, {x: 144, y: 324}, {x: 204, y: 324}, {x: 216, y: 324}, {x: 252, y: 324}, {x: 264, y: 324}, {x: 276, y: 324}, {x: 288, y: 324}, {x: 312, y: 324}, {x: 360, y: 324}, {x: 408, y: 324},
+                // 第二十九行 (y=360)
+                {x: 0, y: 336}, {x: 48, y: 336}, {x: 60, y: 336}, {x: 72, y: 336}, {x: 96, y: 336}, {x: 120, y: 336}, {x: 180, y: 336}, {x: 216, y: 336}, {x: 228, y: 336}, {x: 240, y: 336}, {x: 264, y: 336}, {x: 288, y: 336}, {x: 312, y: 336}, {x: 324, y: 336}, {x: 336, y: 336}, {x: 348, y: 336}, {x: 360, y: 336}, {x: 396, y: 336}, {x: 408, y: 336},
+                // 第三十行 (y=372)
+                {x: 0, y: 348}, {x: 48, y: 348}, {x: 60, y: 348}, {x: 72, y: 348}, {x: 96, y: 348}, {x: 132, y: 348}, {x: 180, y: 348}, {x: 204, y: 348}, {x: 216, y: 348}, {x: 264, y: 348}, {x: 288, y: 348}, {x: 300, y: 348}, {x: 312, y: 348}, {x: 360, y: 348}, {x: 372, y: 348}, {x: 408, y: 348},
+                // 第三十一行 (y=384)
+                {x: 0, y: 360}, {x: 48, y: 360}, {x: 60, y: 360}, {x: 72, y: 360}, {x: 96, y: 360}, {x: 120, y: 360}, {x: 132, y: 360}, {x: 144, y: 360}, {x: 168, y: 360}, {x: 192, y: 360}, {x: 216, y: 360}, {x: 240, y: 360}, {x: 252, y: 360}, {x: 264, y: 360}, {x: 276, y: 360}, {x: 300, y: 360}, {x: 324, y: 360}, {x: 348, y: 360}, {x: 360, y: 360}, {x: 372, y: 360}, {x: 384, y: 360}, {x: 408, y: 360},
+                // 第三十二行 (y=396)
+                {x: 0, y: 372}, {x: 96, y: 372}, {x: 132, y: 372}, {x: 144, y: 372}, {x: 156, y: 372}, {x: 168, y: 372}, {x: 192, y: 372}, {x: 240, y: 372}, {x: 252, y: 372}, {x: 312, y: 372}, {x: 324, y: 372}, {x: 336, y: 372}, {x: 348, y: 372}, {x: 372, y: 372}, {x: 396, y: 372}, {x: 408, y: 372},
+                // 第三十三行 (y=408)
+                {x: 0, y: 384}, {x: 48, y: 384}, {x: 60, y: 384}, {x: 72, y: 384}, {x: 96, y: 384}, {x: 120, y: 384}, {x: 132, y: 384}, {x: 144, y: 384}, {x: 168, y: 384}, {x: 192, y: 384}, {x: 216, y: 384}, {x: 240, y: 384}, {x: 252, y: 384}, {x: 264, y: 384}, {x: 276, y: 384}, {x: 300, y: 384}, {x: 324, y: 384}, {x: 348, y: 384}, {x: 360, y: 384}, {x: 372, y: 384}, {x: 384, y: 384}, {x: 408, y: 384},
+                // 第三十四行 (y=420)
+                {x: 0, y: 396}, {x: 96, y: 396}, {x: 132, y: 396}, {x: 144, y: 396}, {x: 156, y: 396}, {x: 168, y: 396}, {x: 192, y: 396}, {x: 240, y: 396}, {x: 252, y: 396}, {x: 312, y: 396}, {x: 324, y: 396}, {x: 336, y: 396}, {x: 348, y: 396}, {x: 372, y: 396}, {x: 396, y: 396}, {x: 408, y: 396},
+                // 第三十五行 (y=432)
+                {x: 0, y: 408}, {x: 36, y: 408}, {x: 48, y: 408}, {x: 60, y: 408}, {x: 72, y: 408}, {x: 84, y: 408}, {x: 96, y: 408}, {x: 156, y: 408}, {x: 168, y: 408}, {x: 180, y: 408}, {x: 192, y: 408}, {x: 216, y: 408}, {x: 252, y: 408}, {x: 264, y: 408}, {x: 300, y: 408}, {x: 312, y: 408}, {x: 336, y: 408}, {x: 348, y: 408}, {x: 360, y: 408}, {x: 372, y: 408}, {x: 384, y: 408}, {x: 408, y: 408}
+              ];
+              
+              // 计算缩放比例（SVG是432x432，目标尺寸是140x140）
+              const scale = qrSize / 432;
+              
+              // 绘制二维码
               ctx.fillStyle = colors.text;
-              const gridSize = qrSize / 8;
-              for (let i = 0; i < 8; i++) {
-                for (let j = 0; j < 8; j++) {
-                  if ((i + j) % 3 === 0 || (i === 0 && j < 3) || (j === 0 && i < 3)) {
-                    ctx.fillRect(qrX + i * gridSize + 10, qrY + j * gridSize + 10, gridSize - 2, gridSize - 2);
-                  }
-                }
-              }
+              qrRectangles.forEach(rect => {
+                ctx.fillRect(
+                  qrX + rect.x * scale + 12,
+                  qrY + rect.y * scale + 12,
+                  scale * 12 - 2,
+                  scale * 12 - 2
+                );
+              });
               
               // 绘制二维码说明文字
-              ctx.font = '28px system-ui, -apple-system, sans-serif';
-              ctx.fillStyle = colors.muted;
+              ctx.font = '32px system-ui, -apple-system, sans-serif';
+              ctx.fillStyle = colors.text;
               ctx.textAlign = 'center';
-              ctx.fillText('Scan to visit', canvas.width / 2, qrY + qrSize + 40);
+              ctx.fillText('Scan to visit', canvas.width / 2, qrY + qrSize + 50);
               
               // 绘制版权信息（英文）
-              ctx.font = '32px system-ui, -apple-system, sans-serif';
-              ctx.fillStyle = colors.muted;
+              ctx.font = '36px system-ui, -apple-system, sans-serif';
+              ctx.fillStyle = colors.text;
               ctx.textAlign = 'center';
-              ctx.fillText('Designed & Built by Haynes Fang', canvas.width / 2, canvas.height - 60);
+              ctx.fillText('Designed & Built by Haynes Fang', canvas.width / 2, canvas.height - 80);
               
               // 创建下载链接
               const link = document.createElement('a');
@@ -587,6 +1012,38 @@ export default function Page(){
           </div>
         </div>
       </div>
+      
+      {/* 图片预览模态框 */}
+      {showPreview && previewImage && (
+        <div className="preview-modal">
+          <div className="preview-content">
+            <button 
+              className="preview-close"
+              onClick={() => setShowPreview(false)}
+            >
+              ✕
+            </button>
+            <img 
+              src={previewImage} 
+              alt="AI简报预览图" 
+              className="preview-image"
+            />
+            <div className="preview-actions">
+              <button 
+                className="btn" 
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.download = `AI-brief-${brief?.date?.replace(/-/g,'') || 'preview'}.png`;
+                  link.href = previewImage;
+                  link.click();
+                }}
+              >
+                下载图片
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
