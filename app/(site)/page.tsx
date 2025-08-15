@@ -234,9 +234,8 @@ export default function Page(){
               </div>
               <div className="hero-actions">
                 <a className="btn-icon" href="/archive" title="查看归档">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 7v10a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
-                    <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
+                  <svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M2.8,2.06C3.076,1.418 3.711,0.999 4.41,1L11.59,1C12.29,1 12.923,1.417 13.2,2.06L15.94,8.455C15.98,8.548 16,8.649 16,8.75L16,13.25C16,14.21 15.21,15 14.25,15L1.75,15C0.79,15 0,14.21 0,13.25L0,8.75C0,8.649 0.02,8.548 0.06,8.455L2.8,2.06ZM4.41,2.5C4.31,2.5 4.219,2.56 4.18,2.652L1.887,8L4.75,8C4.986,8 5.208,8.111 5.35,8.3L6.625,10L9.375,10L10.65,8.3C10.792,8.111 11.014,8 11.25,8L14.113,8L11.82,2.652C11.781,2.56 11.69,2.5 11.59,2.5L4.41,2.5ZM14.5,9.5L11.625,9.5L10.35,11.2C10.208,11.389 9.986,11.5 9.75,11.5L6.25,11.5C6.014,11.5 5.792,11.389 5.65,11.2L4.375,9.5L1.5,9.5L1.5,13.25C1.5,13.388 1.612,13.5 1.75,13.5L14.25,13.5C14.387,13.5 14.5,13.387 14.5,13.25L14.5,9.5Z"/>
                   </svg>
                 </a>
                 <ThemeToggle />
@@ -346,11 +345,118 @@ export default function Page(){
             const a = document.createElement('a');
             a.href = url; a.download = `AI-brief-${brief.date?.replace(/-/g,'')}.html`; a.click(); URL.revokeObjectURL(url);
           }}>导出 HTML</button>
+          <button className="btn" onClick={()=>{
+            try {
+              // 创建 Canvas 元素
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              if (!ctx) return;
+              
+              // 设置画布尺寸 - 适应主流手机屏幕 (9:16比例)
+              canvas.width = 1080;
+              canvas.height = 1920;
+              
+              // 根据当前主题设置颜色
+              const colors = themeLight ? {
+                bg: '#f7f9fc',
+                text: '#0f1624',
+                muted: '#5b6780',
+                brand: '#2667ff',
+                accent: '#1aa6b7'
+              } : {
+                bg: '#0b0f16',
+                text: '#e6ecff',
+                muted: '#9fb0cf',
+                brand: '#5aa9ff',
+                accent: '#7ef0ff'
+              };
+              
+              // 设置背景色
+              ctx.fillStyle = colors.bg;
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              
+              // 设置文字样式
+              ctx.fillStyle = colors.text;
+              ctx.font = 'bold 48px system-ui, -apple-system, sans-serif';
+              ctx.textAlign = 'center';
+              
+              // 绘制标题
+              ctx.fillText('AI 产品每日简报', canvas.width / 2, 120);
+              
+              // 绘制日期
+              ctx.font = '32px system-ui, -apple-system, sans-serif';
+              ctx.fillStyle = colors.muted;
+              ctx.fillText(fmtDate(brief.date || new Date().toISOString()), canvas.width / 2, 180);
+              
+              // 绘制要点
+              ctx.font = '36px system-ui, -apple-system, sans-serif';
+              ctx.fillStyle = colors.text;
+              ctx.fillText(brief.headline || '今日要点', canvas.width / 2, 260);
+              
+              // 绘制统计信息
+              ctx.font = '28px system-ui, -apple-system, sans-serif';
+              ctx.fillStyle = colors.muted;
+              const statsText = `今日条目: ${total} | 新发布: ${counts.new || 0} | 功能更新: ${counts.update || 0}`;
+              ctx.fillText(statsText, canvas.width / 2, 320);
+              
+              // 绘制前几个条目
+              let yPos = 400;
+              brief.items.slice(0, 12).forEach((item, index) => {
+                if (yPos > canvas.height - 100) return;
+                
+                ctx.font = 'bold 28px system-ui, -apple-system, sans-serif';
+                ctx.fillStyle = colors.brand;
+                ctx.textAlign = 'left';
+                ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 100, yPos);
+                
+                ctx.font = '24px system-ui, -apple-system, sans-serif';
+                ctx.fillStyle = colors.muted;
+                const words = item.summary.split(' ');
+                let line = '';
+                let lineCount = 0;
+                
+                for (let word of words) {
+                  if (ctx.measureText(line + word).width > canvas.width - 200) {
+                    ctx.fillText(line, 100, yPos + 40);
+                    line = word + ' ';
+                    lineCount++;
+                    yPos += 40;
+                  } else {
+                    line += word + ' ';
+                  }
+                  if (lineCount >= 2) break; // 限制每项最多2行
+                }
+                if (line) {
+                  ctx.fillText(line, 100, yPos + 40);
+                }
+                yPos += 80;
+              });
+              
+              // 绘制版权信息
+              ctx.font = '24px system-ui, -apple-system, sans-serif';
+              ctx.fillStyle = colors.muted;
+              ctx.textAlign = 'center';
+              ctx.fillText('由 Haynes Fang 设计并搭建', canvas.width / 2, canvas.height - 60);
+              
+              // 创建下载链接
+              const link = document.createElement('a');
+              link.download = `AI-brief-${brief.date?.replace(/-/g,'')}.png`;
+              link.href = canvas.toDataURL('image/png');
+              link.click();
+              
+            } catch (error) {
+              console.error('导出图片失败:', error);
+              alert('导出图片失败，请稍后重试');
+            }
+          }}>导出为图片</button>
         </div>
 
         {/* ✅ 页脚注脚（很小的字） */}
         <div className="footer">
           注：本页面自动汇总公开来源的更新信息，每天早上9点更新，仅用于学习与研究，不构成任何商业承诺或投资建议。
+          <div style={{marginTop: '8px', opacity: 0.6}}>
+            由 Haynes Fang 设计并搭建
+          </div>
         </div>
       </div>
     </div>
