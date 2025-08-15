@@ -14,9 +14,9 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // 使用背景图片的尺寸：1920x1080 竖屏
-    canvas.width = 1920;
-    canvas.height = 1080;
+    // 使用背景图片的尺寸：1080x1920 竖屏
+    canvas.width = 1080;
+    canvas.height = 1920;
     
     // 只使用浅色主题，参考第一张图的颜色
     const colors = {
@@ -64,94 +64,68 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
       
       // 在背景图片上添加日期
-      ctx.font = '36px system-ui, -apple-system, sans-serif';
+      ctx.font = '28px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.muted;
       ctx.textAlign = 'center';
       const date = brief?.date || new Date().toISOString();
-      ctx.fillText(formatDate(date), canvas.width / 2, 240);
+      ctx.fillText(formatDate(date), canvas.width / 2, 180);
       
-      // 绘制主要内容卡片（白色圆角矩形）
-      const cardX = 160;
-      const cardY = 300;
-      const cardWidth = canvas.width - 320;
-      const cardHeight = 600;
-      
-      // 绘制白色卡片背景（圆角矩形）
-      ctx.fillStyle = colors.card;
-      ctx.beginPath();
-      ctx.moveTo(cardX + 20, cardY);
-      ctx.lineTo(cardX + cardWidth - 20, cardY);
-      ctx.quadraticCurveTo(cardX + cardWidth, cardY, cardX + cardWidth, cardY + 20);
-      ctx.lineTo(cardX + cardWidth, cardY + cardHeight - 20);
-      ctx.quadraticCurveTo(cardX + cardWidth, cardY + cardHeight, cardX + cardWidth - 20, cardY + cardHeight);
-      ctx.lineTo(cardX + 20, cardY + cardHeight);
-      ctx.quadraticCurveTo(cardX, cardY + cardHeight, cardX, cardY + cardHeight - 20);
-      ctx.lineTo(cardX, cardY + 20);
-      ctx.quadraticCurveTo(cardX, cardY, cardX + 20, cardY);
-      ctx.closePath();
-      ctx.fill();
-      
-      // 绘制卡片边框
-      ctx.strokeStyle = colors.border;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      
-      // 在卡片内绘制内容
+      // 直接在背景图片上绘制内容
       ctx.textAlign = 'left';
-      let yPos = cardY + 80;
+      let yPos = 280; // 从日期下方开始
       
       // 绘制项目列表
-      const maxItems = Math.min(6, brief?.items.length || 0);
+      const maxItems = Math.min(8, brief?.items.length || 0);
       
       for (let i = 0; i < maxItems; i++) {
         const item = brief.items[i];
         
         // 产品名称和类型标签
-        ctx.font = 'bold 42px system-ui, -apple-system, sans-serif';
-        ctx.fillStyle = colors.brand;
-        ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, cardX + 60, yPos);
+        ctx.font = '32px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = colors.muted;
+        ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 120, yPos);
         
         // 项目描述
-        ctx.font = '32px system-ui, -apple-system, sans-serif';
+        ctx.font = '24px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = colors.text;
-        const maxDescWidth = cardWidth - 120;
+        const maxDescWidth = canvas.width - 240; // 左右各120px边距
         let desc = item.summary;
         
         // 文本换行处理
         if (ctx.measureText(desc).width > maxDescWidth) {
           const words = desc.split('');
           let line = '';
-          let currentY = yPos + 50;
+          let currentY = yPos + 40;
           
           for (let char of words) {
             if (ctx.measureText(line + char).width > maxDescWidth) {
-              ctx.fillText(line, cardX + 60, currentY);
+              ctx.fillText(line, 120, currentY);
               line = char;
-              currentY += 45;
+              currentY += 35;
             } else {
               line += char;
             }
           }
           if (line) {
-            ctx.fillText(line, cardX + 60, currentY);
-            yPos = currentY + 30;
+            ctx.fillText(line, 120, currentY);
+            yPos = currentY + 25;
           } else {
-            yPos += 50;
+            yPos += 40;
           }
         } else {
-          ctx.fillText(desc, cardX + 60, yPos + 50);
-          yPos += 90;
+          ctx.fillText(desc, 120, yPos + 40);
+          yPos += 70;
         }
         
         // 绘制分割线（除了最后一条）
         if (i < maxItems - 1) {
           ctx.strokeStyle = colors.border;
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(cardX + 60, yPos + 15);
-          ctx.lineTo(cardX + cardWidth - 60, yPos + 15);
+          ctx.moveTo(120, yPos + 10);
+          ctx.lineTo(canvas.width - 120, yPos + 10);
           ctx.stroke();
-          yPos += 30;
+          yPos += 20;
         }
       }
       
@@ -206,97 +180,71 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
   // 绘制标题
   ctx.fillStyle = colors.text;
   ctx.textAlign = 'center';
-  ctx.font = 'bold 72px system-ui, -apple-system, sans-serif';
-  ctx.fillText('AI 产品每日简报', width / 2, 180);
+  ctx.font = '48px system-ui, -apple-system, sans-serif';
+  ctx.fillText('AI 产品每日简报', width / 2, 120);
   
   // 绘制日期
-  ctx.font = '36px system-ui, -apple-system, sans-serif';
+  ctx.font = '28px system-ui, -apple-system, sans-serif';
   ctx.fillStyle = colors.muted;
   const date = brief?.date || new Date().toISOString();
-  ctx.fillText(formatDate(date), width / 2, 240);
+  ctx.fillText(formatDate(date), width / 2, 180);
   
-  // 绘制主要内容卡片
-  const cardX = 160;
-  const cardY = 300;
-  const cardWidth = width - 320;
-  const cardHeight = 600;
-  
-  // 绘制白色卡片背景
-  ctx.fillStyle = colors.card;
-  ctx.beginPath();
-  ctx.moveTo(cardX + 20, cardY);
-  ctx.lineTo(cardX + cardWidth - 20, cardY);
-  ctx.quadraticCurveTo(cardX + cardWidth, cardY, cardX + cardWidth, cardY + 20);
-  ctx.lineTo(cardX + cardWidth, cardY + cardHeight - 20);
-  ctx.quadraticCurveTo(cardX + cardWidth, cardY + cardHeight, cardX + cardWidth - 20, cardY + cardHeight);
-  ctx.lineTo(cardX + 20, cardY + cardHeight);
-  ctx.quadraticCurveTo(cardX, cardY + cardHeight, cardX, cardY + cardHeight - 20);
-  ctx.lineTo(cardX, cardY + 20);
-  ctx.quadraticCurveTo(cardX, cardY, cardX + 20, cardY);
-  ctx.closePath();
-  ctx.fill();
-  
-  // 绘制卡片边框
-  ctx.strokeStyle = colors.border;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  // 在卡片内绘制内容
+  // 直接在背景上绘制内容
   ctx.textAlign = 'left';
-  let yPos = cardY + 80;
+  let yPos = 280; // 从标题和日期下方开始
   
   // 绘制项目列表
-  const maxItems = Math.min(6, brief?.items.length || 0);
+  const maxItems = Math.min(8, brief?.items.length || 0);
   
   for (let i = 0; i < maxItems; i++) {
     const item = brief.items[i];
     
     // 产品名称和类型标签
-    ctx.font = 'bold 42px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = colors.brand;
-    ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, cardX + 60, yPos);
+    ctx.font = '32px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = colors.muted;
+    ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 120, yPos);
     
     // 项目描述
-    ctx.font = '32px system-ui, -apple-system, sans-serif';
+    ctx.font = '24px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = colors.text;
-    const maxDescWidth = cardWidth - 120;
+    const maxDescWidth = width - 240; // 左右各120px边距
     let desc = item.summary;
     
     // 文本换行处理
     if (ctx.measureText(desc).width > maxDescWidth) {
       const words = desc.split('');
       let line = '';
-      let currentY = yPos + 50;
+      let currentY = yPos + 40;
       
       for (let char of words) {
         if (ctx.measureText(line + char).width > maxDescWidth) {
-          ctx.fillText(line, cardX + 60, currentY);
+          ctx.fillText(line, 120, currentY);
           line = char;
-          currentY += 45;
+          currentY += 35;
         } else {
           line += char;
         }
       }
       if (line) {
-        ctx.fillText(line, cardX + 60, currentY);
-        yPos = currentY + 30;
+        ctx.fillText(line, 120, currentY);
+        yPos = currentY + 25;
       } else {
-        yPos += 50;
+        yPos += 40;
       }
     } else {
-      ctx.fillText(desc, cardX + 60, yPos + 50);
-      yPos += 90;
+      ctx.fillText(desc, 120, yPos + 40);
+      yPos += 70;
     }
     
     // 绘制分割线（除了最后一条）
     if (i < maxItems - 1) {
       ctx.strokeStyle = colors.border;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(cardX + 60, yPos + 15);
-      ctx.lineTo(cardX + cardWidth - 60, yPos + 15);
+      ctx.moveTo(120, yPos + 10);
+      ctx.lineTo(width - 120, yPos + 10);
       ctx.stroke();
-      yPos += 30;
+      yPos += 20;
     }
   }
 };
