@@ -14,114 +14,145 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    canvas.width = 800;
-    canvas.height = 1200;
+    // 使用背景图片的尺寸：1920x1080 竖屏
+    canvas.width = 1920;
+    canvas.height = 1080;
     
-    // 设置主题颜色
-    const colors = themeLight ? {
-      bg: '#f7f9fc',
-      text: '#0f1624',
-      muted: '#5b6780',
-      brand: '#2667ff',
-      card: '#ffffff'
-    } : {
-      bg: '#0b0f16',
-      text: '#e6ecff',
-      muted: '#9fb0cf',
-      brand: '#5aa9ff',
-      card: '#0f1624'
+    // 只使用浅色主题，参考第一张图的颜色
+    const colors = {
+      bg: '#f7f9fc',      // 浅蓝灰色背景
+      text: '#0f1624',    // 深色文字
+      muted: '#5b6780',   // 灰色次要文字
+      brand: '#2667ff',   // 蓝色品牌色
+      card: '#ffffff',    // 白色卡片背景
+      border: '#e1e5e9'   // 浅灰色边框
     };
     
-    // 加载背景图片
+    // 加载背景图片（包含标题、二维码、版权信息等）
     const bgImage = new Image();
     bgImage.crossOrigin = 'anonymous';
-    bgImage.src = '/photo/Background.webp';
     
-    // 添加加载状态提示
-    console.log('开始加载背景图片...');
+    // 确保图片路径在所有环境下都正确
+    const imagePath = '/photo/Background.webp';
+    console.log('尝试加载背景图片:', imagePath);
+    console.log('当前域名:', window.location.origin);
+    console.log('完整图片URL:', window.location.origin + imagePath);
+    
+    // 设置图片加载超时（10秒）
+    const imageLoadTimeout = setTimeout(() => {
+      console.error('图片加载超时，使用纯色背景');
+      bgImage.onerror = null; // 清除错误处理
+      drawContentOnPlainBackground(ctx, colors, brief, counts, canvas.width, canvas.height);
+      
+      const filename = `AI-brief-${brief?.date?.replace(/-/g,'') || 'preview'}.png`;
+      const imageData = canvas.toDataURL('image/png');
+      onDownload?.(filename);
+      
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = imageData;
+      link.click();
+    }, 10000);
+    
+    bgImage.src = imagePath;
     
     bgImage.onload = () => {
       console.log('背景图片加载成功，开始绘制...');
-      // 绘制背景图片（包含标题、二维码、版权信息等）
+      clearTimeout(imageLoadTimeout); // 清除超时定时器
+      
+      // 绘制背景图片
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
       
-      // 绘制日期
-      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
+      // 在背景图片上添加日期
+      ctx.font = '36px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.muted;
+      ctx.textAlign = 'center';
       const date = brief?.date || new Date().toISOString();
-      ctx.fillText(formatDate(date), canvas.width / 2, 130);
+      ctx.fillText(formatDate(date), canvas.width / 2, 240);
       
-      // 绘制要点
-      ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.text;
-      ctx.fillText('今日要点', canvas.width / 2, 200);
+      // 绘制主要内容卡片（白色圆角矩形）
+      const cardX = 160;
+      const cardY = 300;
+      const cardWidth = canvas.width - 320;
+      const cardHeight = 600;
       
-      ctx.font = '28px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.muted;
-      const headline = brief?.headline || '今日要点';
-      const maxWidth = canvas.width - 80;
-      if (ctx.measureText(headline).width > maxWidth) {
-        const words = headline.split('');
-        let line = '';
-        let y = 250;
-        for (let char of words) {
-          if (ctx.measureText(line + char).width > maxWidth) {
-            ctx.fillText(line, canvas.width / 2, y);
-            line = char;
-            y += 40;
-          } else {
-            line += char;
-          }
-        }
-        if (line) ctx.fillText(line, canvas.width / 2, y);
-      } else {
-        ctx.fillText(headline, canvas.width / 2, 250);
-      }
+      // 绘制白色卡片背景（圆角矩形）
+      ctx.fillStyle = colors.card;
+      ctx.beginPath();
+      ctx.moveTo(cardX + 20, cardY);
+      ctx.lineTo(cardX + cardWidth - 20, cardY);
+      ctx.quadraticCurveTo(cardX + cardWidth, cardY, cardX + cardWidth, cardY + 20);
+      ctx.lineTo(cardX + cardWidth, cardY + cardHeight - 20);
+      ctx.quadraticCurveTo(cardX + cardWidth, cardY + cardHeight, cardX + cardWidth - 20, cardY + cardHeight);
+      ctx.lineTo(cardX + 20, cardY + cardHeight);
+      ctx.quadraticCurveTo(cardX, cardY + cardHeight, cardX, cardY + cardHeight - 20);
+      ctx.lineTo(cardX, cardY + 20);
+      ctx.quadraticCurveTo(cardX, cardY, cardX + 20, cardY);
+      ctx.closePath();
+      ctx.fill();
       
-      // 绘制统计信息
-      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.text;
-      ctx.fillText('今日统计', canvas.width / 2, 350);
+      // 绘制卡片边框
+      ctx.strokeStyle = colors.border;
+      ctx.lineWidth = 2;
+      ctx.stroke();
       
-      ctx.font = '24px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.muted;
-      const statsText = `条目: ${brief?.items.length || 0} | 新发布: ${counts?.new || 0} | 更新: ${counts?.update || 0}`;
-      ctx.fillText(statsText, canvas.width / 2, 380);
+      // 在卡片内绘制内容
+      ctx.textAlign = 'left';
+      let yPos = cardY + 80;
       
-      // 绘制项目列表（最多6条，每条之间有分割线）
-      let yPos = 450;
+      // 绘制项目列表
       const maxItems = Math.min(6, brief?.items.length || 0);
       
       for (let i = 0; i < maxItems; i++) {
         const item = brief.items[i];
         
-        // 绘制产品名称和类型
-        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+        // 产品名称和类型标签
+        ctx.font = 'bold 42px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = colors.brand;
-        ctx.textAlign = 'left';
-        ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 60, yPos);
+        ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, cardX + 60, yPos);
         
-        // 绘制项目描述
-        ctx.font = '20px system-ui, -apple-system, sans-serif';
+        // 项目描述
+        ctx.font = '32px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = colors.text;
-        const maxDescWidth = canvas.width - 120;
+        const maxDescWidth = cardWidth - 120;
         let desc = item.summary;
+        
+        // 文本换行处理
         if (ctx.measureText(desc).width > maxDescWidth) {
-          desc = desc.substring(0, 50) + '...';
+          const words = desc.split('');
+          let line = '';
+          let currentY = yPos + 50;
+          
+          for (let char of words) {
+            if (ctx.measureText(line + char).width > maxDescWidth) {
+              ctx.fillText(line, cardX + 60, currentY);
+              line = char;
+              currentY += 45;
+            } else {
+              line += char;
+            }
+          }
+          if (line) {
+            ctx.fillText(line, cardX + 60, currentY);
+            yPos = currentY + 30;
+          } else {
+            yPos += 50;
+          }
+        } else {
+          ctx.fillText(desc, cardX + 60, yPos + 50);
+          yPos += 90;
         }
-        ctx.fillText(desc, 60, yPos + 30);
         
         // 绘制分割线（除了最后一条）
         if (i < maxItems - 1) {
-          ctx.strokeStyle = colors.muted;
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = colors.border;
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(60, yPos + 50);
-          ctx.lineTo(canvas.width - 60, yPos + 50);
+          ctx.moveTo(cardX + 60, yPos + 15);
+          ctx.lineTo(cardX + cardWidth - 60, yPos + 15);
           ctx.stroke();
+          yPos += 30;
         }
-        
-        yPos += 80;
       }
       
       // 导出图片
@@ -138,14 +169,18 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
       console.log('图片导出完成');
     };
     
-    bgImage.onerror = () => {
-      console.error('背景图片加载失败，使用纯色背景');
+    bgImage.onerror = (error) => {
+      console.error('背景图片加载失败:', error);
+      console.error('图片路径:', imagePath);
+      console.error('当前域名:', window.location.origin);
+      console.error('完整URL:', window.location.origin + imagePath);
+      
       // 如果背景图片加载失败，使用纯色背景
       ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // 绘制纯色背景下的内容
-      drawContentWithoutBackground(ctx, colors, brief, counts, canvas.width, canvas.height);
+      // 在纯色背景上绘制内容
+      drawContentOnPlainBackground(ctx, colors, brief, counts, canvas.width, canvas.height);
       
       // 导出纯色背景的图片
       const filename = `AI-brief-${brief?.date?.replace(/-/g,'') || 'preview'}.png`;
@@ -166,83 +201,103 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
   }
 };
 
-// 绘制纯色背景下的内容
-const drawContentWithoutBackground = (ctx: CanvasRenderingContext2D, colors: any, brief: any, counts: any, width: number, height: number) => {
-  // 绘制日期
-  ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = colors.muted;
+// 在纯色背景上绘制内容的备用函数
+const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any, brief: any, counts: any, width: number, height: number) => {
+  // 绘制标题
+  ctx.fillStyle = colors.text;
   ctx.textAlign = 'center';
+  ctx.font = 'bold 72px system-ui, -apple-system, sans-serif';
+  ctx.fillText('AI 产品每日简报', width / 2, 180);
+  
+  // 绘制日期
+  ctx.font = '36px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = colors.muted;
   const date = brief?.date || new Date().toISOString();
-  ctx.fillText(formatDate(date), width / 2, 130);
+  ctx.fillText(formatDate(date), width / 2, 240);
   
-  // 绘制要点
-  ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = colors.text;
-  ctx.fillText('今日要点', width / 2, 200);
+  // 绘制主要内容卡片
+  const cardX = 160;
+  const cardY = 300;
+  const cardWidth = width - 320;
+  const cardHeight = 600;
   
-  ctx.font = '28px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = colors.muted;
-  const headline = brief?.headline || '今日要点';
-  const maxWidth = width - 80;
-  if (ctx.measureText(headline).width > maxWidth) {
-    const words = headline.split('');
-    let line = '';
-    let y = 250;
-    for (let char of words) {
-      if (ctx.measureText(line + char).width > maxWidth) {
-        ctx.fillText(line, width / 2, y);
-        line = char;
-        y += 40;
-      } else {
-        line += char;
-      }
-    }
-    if (line) ctx.fillText(line, width / 2, y);
-  } else {
-    ctx.fillText(headline, width / 2, 250);
-  }
+  // 绘制白色卡片背景
+  ctx.fillStyle = colors.card;
+  ctx.beginPath();
+  ctx.moveTo(cardX + 20, cardY);
+  ctx.lineTo(cardX + cardWidth - 20, cardY);
+  ctx.quadraticCurveTo(cardX + cardWidth, cardY, cardX + cardWidth, cardY + 20);
+  ctx.lineTo(cardX + cardWidth, cardY + cardHeight - 20);
+  ctx.quadraticCurveTo(cardX + cardWidth, cardY + cardHeight, cardX + cardWidth - 20, cardY + cardHeight);
+  ctx.lineTo(cardX + 20, cardY + cardHeight);
+  ctx.quadraticCurveTo(cardX, cardY + cardHeight, cardX, cardY + cardHeight - 20);
+  ctx.lineTo(cardX, cardY + 20);
+  ctx.quadraticCurveTo(cardX, cardY, cardX + 20, cardY);
+  ctx.closePath();
+  ctx.fill();
   
-  // 绘制统计信息
-  ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = colors.text;
-  ctx.fillText('今日统计', width / 2, 350);
+  // 绘制卡片边框
+  ctx.strokeStyle = colors.border;
+  ctx.lineWidth = 2;
+  ctx.stroke();
   
-  ctx.font = '24px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = colors.muted;
-  const statsText = `条目: ${brief?.items.length || 0} | 新发布: ${counts?.new || 0} | 更新: ${counts?.update || 0}`;
-  ctx.fillText(statsText, width / 2, 380);
+  // 在卡片内绘制内容
+  ctx.textAlign = 'left';
+  let yPos = cardY + 80;
   
   // 绘制项目列表
-  let yPos = 450;
   const maxItems = Math.min(6, brief?.items.length || 0);
   
   for (let i = 0; i < maxItems; i++) {
     const item = brief.items[i];
     
-    ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
+    // 产品名称和类型标签
+    ctx.font = 'bold 42px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = colors.brand;
-    ctx.textAlign = 'left';
-    ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 60, yPos);
+    ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, cardX + 60, yPos);
     
-    ctx.font = '20px system-ui, -apple-system, sans-serif';
+    // 项目描述
+    ctx.font = '32px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = colors.text;
-    const maxDescWidth = width - 120;
+    const maxDescWidth = cardWidth - 120;
     let desc = item.summary;
+    
+    // 文本换行处理
     if (ctx.measureText(desc).width > maxDescWidth) {
-      desc = desc.substring(0, 50) + '...';
+      const words = desc.split('');
+      let line = '';
+      let currentY = yPos + 50;
+      
+      for (let char of words) {
+        if (ctx.measureText(line + char).width > maxDescWidth) {
+          ctx.fillText(line, cardX + 60, currentY);
+          line = char;
+          currentY += 45;
+        } else {
+          line += char;
+        }
+      }
+      if (line) {
+        ctx.fillText(line, cardX + 60, currentY);
+        yPos = currentY + 30;
+      } else {
+        yPos += 50;
+      }
+    } else {
+      ctx.fillText(desc, cardX + 60, yPos + 50);
+      yPos += 90;
     }
-    ctx.fillText(desc, 60, yPos + 30);
     
+    // 绘制分割线（除了最后一条）
     if (i < maxItems - 1) {
-      ctx.strokeStyle = colors.muted;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = colors.border;
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(60, yPos + 50);
-      ctx.lineTo(width - 60, yPos + 50);
+      ctx.moveTo(cardX + 60, yPos + 15);
+      ctx.lineTo(cardX + cardWidth - 60, yPos + 15);
       ctx.stroke();
+      yPos += 30;
     }
-    
-    yPos += 80;
   }
 };
 
