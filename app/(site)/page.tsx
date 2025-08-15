@@ -97,18 +97,21 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .actions{display:flex; gap:8px; flex-wrap:wrap}
 @media (max-width: 600px){.actions{gap:6px; flex-wrap:wrap; justify-content:space-between} .btn{padding:8px 12px; font-size:13px; flex:1; min-width:0; text-align:center}}
 .btn{appearance:none; border:1px solid var(--border); background:var(--panel-2); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition:all 0.2s ease; font-weight:600; text-decoration:none}
-.btn:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)} .btn:active{transform:translateY(0)}
+.btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
 
 .theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease}
 .theme-toggle:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .theme-toggle .icon{width:16; height:16; color:var(--brand)}
 .theme-toggle .text{font-size:13px; font-weight:600}
 
-.hero-content{display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; align-items:start; margin-bottom:18px}
+.hero-content{display:block; margin-bottom:18px}
 
 .hero-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px}
+.hero-title{display:flex; align-items:center; gap:14px}
+.hero-title .logo{width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--brand), var(--accent)); box-shadow:0 10px 20px rgba(90,169,255,.25); position:relative; isolation:isolate}
+.hero-title .logo:after{content:""; position:absolute; inset:2px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,0)); mix-blend:screen}
 .hero-actions{display:flex; gap:8px; align-items:center}
-.btn-icon{display:flex; align-items:center; justify-content:center; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px; cursor:pointer; transition:all 0.2s ease; color:var(--text); min-width:40px; min-height:40px}
+.btn-icon{display:flex; align-items:center; justify-content:center; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px; cursor:pointer; transition:all 0.2s ease; color:var(--text); width:40px; height:40px}
 .btn-icon:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .btn-icon svg{width:16px; height:16px; color:var(--brand)}
 .hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px}
@@ -122,9 +125,9 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 
 .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px; margin-top:18px}
 .col-8{grid-column:span 8} .col-4{grid-column:span 4}
-@media (max-width: 900px){.hero-content{grid-template-columns:1fr}.col-8,.col-4{grid-column:1 / -1}}
-@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:16px} .hero-content{grid-template-columns:1fr; gap:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px} .actions{justify-content:space-between; width:100%; gap:8px} .hero-header{flex-direction:column; align-items:flex-start; gap:12px} .bottom-actions{flex-direction:column; align-items:center; gap:8px}}
-@media (max-width: 480px){.actions{gap:4px} .btn{padding:6px 10px; font-size:12px}}
+@media (max-width: 900px){.col-8,.col-4{grid-column:1 / -1}}
+@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} .hero h1{font-size:24px} .hero-title .logo{width:36px; height:36px} .hero-title{gap:10px} .bottom-actions{flex-direction:row; align-items:center; gap:8px; justify-content:center} .bottom-actions .btn{min-width:120px; max-width:200px}}
+@media (max-width: 480px){.actions{gap:4px} .btn{padding:6px 10px; font-size:12px} .hero-header{gap:8px} .hero-actions{gap:6px} .btn-icon{width:36px; height:36px} .bottom-actions{gap:6px} .bottom-actions .btn{min-width:100px; max-width:160px}}
 
 .card{border:1px solid var(--border); background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow)}
 .card h3{margin:0; font-size:16px}
@@ -222,21 +225,18 @@ export default function Page(){
     <div className={themeLight ? 'light' : ''}>
       <style dangerouslySetInnerHTML={{__html: styles}} />
       <div className="wrap">
-        <header>
-          <div className="brand">
-            <div className="logo" aria-hidden="true"></div>
-          </div>
-        </header>
-
         <div className="hero-content">
           <div>
             <div className="hero-header">
-              <h1>今日要点</h1>
+              <div className="hero-title">
+                <div className="logo" aria-hidden="true"></div>
+                <h1>今日要点</h1>
+              </div>
               <div className="hero-actions">
                 <button className="btn-icon" onClick={() => window.open('/archive', '_blank')} title="查看档案">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 7v10a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
                     <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
-                    <path d="M8 5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
                   </svg>
                 </button>
                 <ThemeToggle />
@@ -246,46 +246,6 @@ export default function Page(){
             <div className="kpis" style={{marginTop:12}}>
               {[{n: total, t:'今日条目'},{n: counts.new||0, t:'新发布'},{n: counts.update||0, t:'功能更新'},{n: counts.feedback||0, t:'反馈'},{n: counts.fix||0, t:'修复'}]
                 .map((k,i)=>(<div className="kpi" key={i}><div className="n">{k.n}</div><div className="t">{k.t}</div></div>))}
-            </div>
-          </div>
-
-          <div className="card" style={{padding:'14px'}}>
-            {/* ✅ 简化的筛选器 */}
-            <div className="filterbar">
-              <button
-                className={`pill ${filter==='全部'?'active':''}`}
-                onClick={()=>setFilter('全部')}
-                title="筛选：全部"
-              >
-                全部
-              </button>
-              {products.slice(0, showAllModels ? products.length : 3).map(p=> (
-                <button
-                  key={p}
-                  className={`pill ${filter===p?'active':''}`}
-                  onClick={()=>setFilter(p)}
-                  data-prod={p}
-                  title={`筛选：${p}`}
-                >
-                  {p}
-                </button>
-              ))}
-              {products.length > 3 && (
-                <button
-                  className="pill toggle-more"
-                  onClick={() => setShowAllModels(!showAllModels)}
-                  title={showAllModels ? "收起" : "显示更多"}
-                >
-                  {showAllModels ? "收起" : `+${products.length - 3}个`}
-                </button>
-              )}
-            </div>
-            <div className="divider"></div>
-            <div className="tags">
-              <span className="tag">NEW 新发布</span>
-              <span className="tag">UPDATE 功能更新</span>
-              <span className="tag">FEEDBACK 市场/用户反馈</span>
-              <span className="tag">FIX 修复与回滚</span>
             </div>
           </div>
         </div>
@@ -320,6 +280,49 @@ export default function Page(){
           </div>
 
           <div className="col-4">
+            <div className="card" style={{marginBottom:16}}>
+              <div className="hd"><h3>筛选与模型</h3></div>
+              <div className="bd">
+                {/* ✅ 简化的筛选器 */}
+                <div className="filterbar">
+                  <button
+                    className={`pill ${filter==='全部'?'active':''}`}
+                    onClick={()=>setFilter('全部')}
+                    title="筛选：全部"
+                  >
+                    全部
+                  </button>
+                  {products.slice(0, showAllModels ? products.length : 3).map(p=> (
+                    <button
+                      key={p}
+                      className={`pill ${filter===p?'active':''}`}
+                      onClick={()=>setFilter(p)}
+                      data-prod={p}
+                      title={`筛选：${p}`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  {products.length > 3 && (
+                    <button
+                      className="pill toggle-more"
+                      onClick={() => setShowAllModels(!showAllModels)}
+                      title={showAllModels ? "收起" : "显示更多"}
+                    >
+                      {showAllModels ? "收起" : `+${products.length - 3}个`}
+                    </button>
+                  )}
+                </div>
+                <div className="divider"></div>
+                <div className="tags">
+                  <span className="tag">NEW 新发布</span>
+                  <span className="tag">UPDATE 功能更新</span>
+                  <span className="tag">FEEDBACK 市场/用户反馈</span>
+                  <span className="tag">FIX 修复与回滚</span>
+                </div>
+              </div>
+            </div>
+            
             <div className="card">
               <div className="hd"><h3>来源与参考</h3><a className="btn" href="/archive">查看归档</a></div>
               <div className="bd">
