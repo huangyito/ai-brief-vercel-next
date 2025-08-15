@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../components/ThemeProvider';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { generateAIBriefImage } from '../../utils/imageGenerator';
+import { generateAIBriefImage } from '../utils/imageGenerator';
 
 type Item = {
   product: string;
