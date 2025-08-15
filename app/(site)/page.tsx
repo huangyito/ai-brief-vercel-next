@@ -323,6 +323,13 @@ export default function Page(){
                     </button>
                   )}
                 </div>
+                
+                {/* 在模型筛选器和类型筛选器之间添加分割线 */}
+                <div style={{
+                  height: '1px',
+                  background: 'linear-gradient(90deg, transparent, var(--border), transparent)',
+                  margin: '16px 0'
+                }}></div>
                 <div className="divider"></div>
                 <div className="tags">
                   <span className="tag">NEW 新发布</span>
