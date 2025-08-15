@@ -206,237 +206,133 @@ export default function Page(){
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       
-      canvas.width = 1080;
-      canvas.height = 1920;
+      canvas.width = 800;
+      canvas.height = 1200;
       
       // 设置主题颜色
       const colors = themeLight ? {
         bg: '#f7f9fc',
-        card: '#ffffff',
         text: '#0f1624',
         muted: '#5b6780',
-        brand: '#2667ff',
-        accent: '#1aa6b7',
-        shadow: 'rgba(16,34,64,0.08)'
+        brand: '#2667ff'
       } : {
         bg: '#0b0f16',
-        card: '#0f1624',
         text: '#e6ecff',
         muted: '#9fb0cf',
-        brand: '#5aa9ff',
-        accent: '#7ef0ff',
-        shadow: 'rgba(0,0,0,0.35)'
+        brand: '#5aa9ff'
       };
       
       // 设置背景
       ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // 绘制渐变背景
-      const bgGradient = ctx.createRadialGradient(canvas.width * 0.8, 0, 0, canvas.width * 0.8, 0, canvas.height);
-      bgGradient.addColorStop(0, colors.brand + '15');
-      bgGradient.addColorStop(0.5, colors.accent + '08');
-      bgGradient.addColorStop(1, colors.bg);
-      ctx.fillStyle = bgGradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // 绘制装饰性圆形
-      ctx.fillStyle = colors.bg + '20';
-      for (let i = 0; i < 5; i++) {
-        ctx.beginPath();
-        ctx.arc(200 + i * 150, 60, 30 + i * 10, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      
-      // 绘制主标题区域
-      ctx.fillStyle = colors.card;
-      ctx.shadowColor = colors.shadow;
-      ctx.shadowBlur = 20;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 10;
-      ctx.fillRect(40, 80, canvas.width - 80, 160);
-      ctx.shadowBlur = 0;
-      
       // 绘制标题
       ctx.fillStyle = colors.text;
-      ctx.font = 'bold 80px system-ui, -apple-system, sans-serif';
+      ctx.font = 'bold 48px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('AI 产品每日简报', canvas.width / 2, 160);
+      ctx.fillText('AI 产品每日简报', canvas.width / 2, 80);
       
       // 绘制日期
-      ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
+      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.muted;
-      ctx.fillText(fmtDate(brief?.date || new Date().toISOString()), canvas.width / 2, 210);
+      ctx.fillText(fmtDate(brief?.date || new Date().toISOString()), canvas.width / 2, 130);
       
-      // 绘制要点区域
-      ctx.fillStyle = colors.card;
-      ctx.shadowColor = colors.shadow;
-      ctx.shadowBlur = 15;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 8;
-      ctx.fillRect(40, 280, canvas.width - 80, 140);
-      ctx.shadowBlur = 0;
-      
-      // 绘制要点图标
-      ctx.fillStyle = colors.brand;
-      ctx.beginPath();
-      ctx.arc(80, 320, 25, 0, Math.PI * 2);
-      ctx.fill();
+      // 绘制要点
+      ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.text;
-      ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('💡', 80, 335);
+      ctx.fillText('今日要点', canvas.width / 2, 200);
       
-      ctx.font = 'bold 60px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.text;
-      ctx.fillText('今日要点', canvas.width / 2, 320);
-      
-      ctx.font = '44px system-ui, -apple-system, sans-serif';
+      ctx.font = '28px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.muted;
       const headline = brief?.headline || '今日要点';
-      const maxWidth = canvas.width - 160;
+      const maxWidth = canvas.width - 80;
       if (ctx.measureText(headline).width > maxWidth) {
         const words = headline.split('');
         let line = '';
-        let y = 370;
+        let y = 250;
         for (let char of words) {
           if (ctx.measureText(line + char).width > maxWidth) {
             ctx.fillText(line, canvas.width / 2, y);
             line = char;
-            y += 55;
+            y += 40;
           } else {
             line += char;
           }
         }
         if (line) ctx.fillText(line, canvas.width / 2, y);
       } else {
-        ctx.fillText(headline, canvas.width / 2, 370);
+        ctx.fillText(headline, canvas.width / 2, 250);
       }
       
-      // 绘制统计信息卡片
-      ctx.fillStyle = colors.card;
-      ctx.shadowColor = colors.shadow;
-      ctx.shadowBlur = 15;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 8;
-      ctx.fillRect(40, 460, canvas.width - 80, 120);
-      ctx.shadowBlur = 0;
-      
-      // 绘制统计图标
-      ctx.fillStyle = colors.accent;
-      ctx.beginPath();
-      ctx.arc(80, 500, 25, 0, Math.PI * 2);
-      ctx.fill();
+      // 绘制统计信息
+      ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.text;
-      ctx.font = 'bold 40px system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('📊', 80, 515);
+      ctx.fillText('今日统计', canvas.width / 2, 350);
       
-      ctx.font = 'bold 52px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.text;
-      ctx.fillText('今日统计', canvas.width / 2, 500);
-      
-      ctx.font = '40px system-ui, -apple-system, sans-serif';
+      ctx.font = '24px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.muted;
       const statsText = `条目: ${brief?.items.length || 0} | 新发布: ${counts?.new || 0} | 更新: ${counts?.update || 0}`;
-      ctx.fillText(statsText, canvas.width / 2, 540);
+      ctx.fillText(statsText, canvas.width / 2, 380);
       
       // 绘制项目列表
-      let yPos = 640;
-      const maxItems = 6;
+      let yPos = 450;
+      const maxItems = 8;
       (brief?.items || []).slice(0, maxItems).forEach((item, index) => {
-        // 绘制项目卡片
-        ctx.fillStyle = colors.card;
-        ctx.shadowColor = colors.shadow;
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 5;
-        ctx.fillRect(40, yPos, canvas.width - 80, 120);
-        ctx.shadowBlur = 0;
-        
-        // 绘制项目图标
-        const iconColors = {
-          new: '#63f3a6',
-          update: '#7ef0ff',
-          feedback: '#ffd166',
-          fix: '#ff6b6b'
-        };
-        ctx.fillStyle = iconColors[item.type] || colors.brand;
-        ctx.beginPath();
-        ctx.arc(80, yPos + 60, 20, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // 绘制项目类型标签
-        ctx.fillStyle = colors.text;
-        ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(item.type.toUpperCase(), 120, yPos + 50);
-        
-        // 绘制产品名称
-        ctx.font = 'bold 44px system-ui, -apple-system, sans-serif';
+        // 绘制产品名称和类型
+        ctx.font = 'bold 24px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = colors.brand;
-        ctx.fillText(item.product, 120, yPos + 85);
+        ctx.textAlign = 'left';
+        ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 60, yPos);
         
         // 绘制项目描述
-        ctx.font = '36px system-ui, -apple-system, sans-serif';
+        ctx.font = '20px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = colors.text;
-        const maxDescWidth = canvas.width - 200;
+        const maxDescWidth = canvas.width - 120;
         let desc = item.summary;
         if (ctx.measureText(desc).width > maxDescWidth) {
-          desc = desc.substring(0, 30) + '...';
+          desc = desc.substring(0, 50) + '...';
         }
-        ctx.fillText(desc, 120, yPos + 115);
+        ctx.fillText(desc, 60, yPos + 30);
         
-        yPos += 140;
+        yPos += 60;
       });
       
-      // 绘制二维码区域
-      const qrSize = 140;
+      // 绘制二维码
+      const qrSize = 120;
       const qrX = canvas.width / 2 - qrSize / 2;
-      const qrY = canvas.height - 280;
+      const qrY = canvas.height - 200;
       
       // 绘制二维码背景
-      ctx.fillStyle = colors.card;
-      ctx.shadowColor = colors.shadow;
-      ctx.shadowBlur = 15;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 8;
-      ctx.fillRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
-      ctx.shadowBlur = 0;
-      
-      // 绘制二维码边框
-      ctx.strokeStyle = colors.brand;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
+      ctx.fillStyle = colors.bg === '#0b0f16' ? '#ffffff' : '#f0f0f0';
+      ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
       
       // 绘制二维码（基于SVG数据）
       const qrRectangles = [
-        // 这里包含所有二维码矩形的数据...
         {x: 0, y: 0}, {x: 12, y: 0}, {x: 24, y: 0}, {x: 36, y: 0}, {x: 48, y: 0}, {x: 60, y: 0}, {x: 72, y: 0}, {x: 84, y: 0}, {x: 96, y: 0}, {x: 120, y: 0}, {x: 168, y: 0}, {x: 192, y: 0}, {x: 204, y: 0}, {x: 228, y: 0}, {x: 276, y: 0}, {x: 288, y: 0}, {x: 300, y: 0}, {x: 312, y: 0}, {x: 336, y: 0}, {x: 348, y: 0}, {x: 360, y: 0}, {x: 372, y: 0}, {x: 384, y: 0}, {x: 396, y: 0}, {x: 408, y: 0}
       ];
       
       const scale = qrSize / 432;
-      ctx.fillStyle = colors.text;
+      ctx.fillStyle = colors.bg === '#0b0f16' ? '#000000' : '#333333';
       qrRectangles.forEach(rect => {
         ctx.fillRect(
-          qrX + rect.x * scale + 12,
-          qrY + rect.y * scale + 12,
-          scale * 12 - 2,
-          scale * 12 - 2
+          qrX + rect.x * scale + 10,
+          qrY + rect.y * scale + 10,
+          scale * 12 - 1,
+          scale * 12 - 1
         );
       });
       
       // 绘制二维码说明文字
-      ctx.font = '32px system-ui, -apple-system, sans-serif';
+      ctx.font = '20px system-ui, -apple-system, sans-serif';
       ctx.fillStyle = colors.text;
       ctx.textAlign = 'center';
-      ctx.fillText('Scan to visit', canvas.width / 2, qrY + qrSize + 50);
+      ctx.fillText('Scan to visit', canvas.width / 2, qrY + qrSize + 40);
       
       // 绘制版权信息
-      ctx.font = '36px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.text;
+      ctx.font = '18px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = colors.muted;
       ctx.textAlign = 'center';
-      ctx.fillText('Designed & Built by Haynes Fang', canvas.width / 2, canvas.height - 80);
+      ctx.fillText('由 Haynes Fang 设计并搭建', canvas.width / 2, canvas.height - 40);
       
       if (isPreview) {
         // 预览模式：显示图片
@@ -502,11 +398,13 @@ export default function Page(){
               </div>
               <div className="hero-actions">
                 <a className="btn-icon" href="/archive" title="查看归档">
-                  <svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 2h12v2H2z"/>
-                    <path d="M3 4h10v8H3z"/>
-                    <path d="M5 6h6v2H5z"/>
-                    <path d="M5 9h4v1H5z"/>
+                  <svg width="16" height="16" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round">
+                    <rect x="6" y="6" width="36" height="36" rx="3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round"/>
+                    <path d="M4 31H15L17 35H31L33 31H44" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M42 36V26" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M6 36V26" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M17 15H31" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M17 23H31" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </a>
                 <ThemeToggle />

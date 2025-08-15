@@ -24,14 +24,21 @@ body{
   font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,"Microsoft YaHei",Helvetica,Arial,"Noto Sans",sans-serif;
   letter-spacing:.2px;
 }
+
+/* 浅色模式下的背景渐变调整 */
+.light body{
+  background:
+    radial-gradient(1200px 600px at 80% -100px, rgba(38,103,255,.08), transparent 60%),
+    radial-gradient(900px 600px at -10% -50px, rgba(26,166,183,.06), transparent 60%),
+    var(--bg);
+}
 .wrap{max-width:900px; margin:40px auto; padding:0 16px}
 header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px;}
 .title{font-size:28px; font-weight:700; margin:0; letter-spacing:.3px}
 .subtitle{color:var(--muted); font-size:14px; margin:0}
-.theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease; color:var(--text)}
-.theme-toggle:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
-.theme-toggle .icon{width:16; height:16; color:var(--brand)}
-.theme-toggle .text{font-size:13px; font-weight:600}
+.btn-icon{display:flex; align-items:center; justify-content:center; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px; cursor:pointer; transition:all 0.2s ease}
+.btn-icon:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.btn-icon svg{width:16px; height:16px; color:var(--brand)}
 .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px}
 .item{border:1px solid var(--border); background:var(--panel); padding:14px; border-radius:12px; text-decoration:none; color:inherit; transition:all 0.2s ease; box-shadow:var(--shadow)}
 .item:hover{transform:translateY(-2px); box-shadow:0 8px 25px rgba(0,0,0,.15); border-color:var(--brand)}
@@ -39,6 +46,16 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .item .desc{opacity:.7; font-size:12px; margin-top:4px; color:var(--muted)}
 .back{color:var(--brand); text-decoration:none; font-size:14px; opacity:.8}
 .back:hover{opacity:1}
+
+/* 响应式样式 */
+@media (max-width: 600px){
+  .wrap{padding:0 12px}
+  .title{font-size:24px}
+  .subtitle{font-size:13px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:8px}
+  .item{padding:12px}
+  .btn-icon{width:36px; height:36px}
+}
 `;
 
 export default function ArchivePage(){
