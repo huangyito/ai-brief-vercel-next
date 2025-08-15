@@ -72,7 +72,6 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
       
       // 直接在背景图片上绘制内容
       ctx.textAlign = 'left';
-      let yPos = 320; // 第一个内容从 Y: 320 开始
       
       // 绘制项目列表
       const maxItems = Math.min(8, brief?.items.length || 0);
@@ -83,13 +82,25 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
       for (let i = 0; i < maxItems; i++) {
         const item = brief.items[i];
         
-        // 产品名称和类型标签
-        ctx.font = '36px system-ui, -apple-system, sans-serif';
+        // 计算每个内容块的起始位置
+        const contentStartY = 320 + i * 200; // 每个内容块间隔200px
+        const labelY = contentStartY;
+        const descY = contentStartY + 50;
+        
+        // 产品名称
+        ctx.font = '400 36px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = '#000000';
-        ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 120, yPos);
+        ctx.fillText(item.product, 120, labelY);
+        
+        // 状态标签 [NEW], [UPDATE] 等
+        const labelText = `[${item.type.toUpperCase()}]`;
+        const labelWidth = ctx.measureText(labelText).width;
+        ctx.font = '200 30px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = '#8E99AF';
+        ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 10, labelY);
         
         // 项目描述
-        ctx.font = '30px system-ui, -apple-system, sans-serif';
+        ctx.font = '200 30px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = '#000000';
         const maxDescWidth = canvas.width - 240; // 左右各120px边距
         let desc = item.summary;
@@ -98,7 +109,7 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
         if (ctx.measureText(desc).width > maxDescWidth) {
           const words = desc.split('');
           let line = '';
-          let currentY = yPos + 50;
+          let currentY = descY;
           
           for (let char of words) {
             if (ctx.measureText(line + char).width > maxDescWidth) {
@@ -111,24 +122,20 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
           }
           if (line) {
             ctx.fillText(line, 120, currentY);
-            yPos = currentY + 30;
-          } else {
-            yPos += 50;
           }
         } else {
-          ctx.fillText(desc, 120, yPos + 50);
-          yPos += 100;
+          ctx.fillText(desc, 120, descY);
         }
         
         // 绘制分割线（除了最后一条）
         if (i < maxItems - 1) {
-          ctx.strokeStyle = '#808080';
+          const dividerY = contentStartY + 140; // 分割线在内容块下方140px
+          ctx.strokeStyle = '#CCCCCC';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(120, yPos + 20);
-          ctx.lineTo(canvas.width - 120, yPos + 20);
+          ctx.moveTo(120, dividerY);
+          ctx.lineTo(canvas.width - 120, dividerY);
           ctx.stroke();
-          yPos += 60; // 分割线后到下一个内容的间距
         }
       }
       
@@ -194,7 +201,6 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
   
   // 直接在背景上绘制内容
   ctx.textAlign = 'left';
-  let yPos = 320; // 第一个内容从 Y: 320 开始
   
   // 绘制项目列表
   const maxItems = Math.min(8, brief?.items.length || 0);
@@ -202,13 +208,25 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
   for (let i = 0; i < maxItems; i++) {
     const item = brief.items[i];
     
-    // 产品名称和类型标签
-    ctx.font = '36px system-ui, -apple-system, sans-serif';
+    // 计算每个内容块的起始位置
+    const contentStartY = 320 + i * 200; // 每个内容块间隔200px
+    const labelY = contentStartY;
+    const descY = contentStartY + 50;
+    
+    // 产品名称
+    ctx.font = '400 36px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#000000';
-    ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 120, yPos);
+    ctx.fillText(item.product, 120, labelY);
+    
+    // 状态标签 [NEW], [UPDATE] 等
+    const labelText = `[${item.type.toUpperCase()}]`;
+    const labelWidth = ctx.measureText(labelText).width;
+    ctx.font = '200 30px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = '#8E99AF';
+    ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 10, labelY);
     
     // 项目描述
-    ctx.font = '30px system-ui, -apple-system, sans-serif';
+    ctx.font = '200 30px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#000000';
     const maxDescWidth = width - 240; // 左右各120px边距
     let desc = item.summary;
@@ -217,7 +235,7 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
     if (ctx.measureText(desc).width > maxDescWidth) {
       const words = desc.split('');
       let line = '';
-      let currentY = yPos + 50;
+      let currentY = descY;
       
       for (let char of words) {
         if (ctx.measureText(line + char).width > maxDescWidth) {
@@ -230,24 +248,20 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
       }
       if (line) {
         ctx.fillText(line, 120, currentY);
-        yPos = currentY + 40;
-      } else {
-        yPos += 50;
       }
     } else {
-      ctx.fillText(desc, 120, yPos + 50);
-      yPos += 100;
+      ctx.fillText(desc, 120, descY);
     }
     
     // 绘制分割线（除了最后一条）
     if (i < maxItems - 1) {
-      ctx.strokeStyle = '#808080';
+      const dividerY = contentStartY + 140; // 分割线在内容块下方140px
+      ctx.strokeStyle = '#CCCCCC';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(120, yPos + 20);
-      ctx.lineTo(width - 120, yPos + 20);
+      ctx.moveTo(120, dividerY);
+      ctx.lineTo(width - 120, dividerY);
       ctx.stroke();
-      yPos += 40;
     }
   }
 };
