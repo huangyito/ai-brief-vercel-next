@@ -65,6 +65,9 @@ const styles = `
 .light{ --bg:#f7f9fc; --panel:#ffffff; --panel-2:#f0f3f9; --text:#0f1624; --muted:#5b6780; --brand:#2667ff; --accent:#1aa6b7; --chip:#e9eef7; --border:rgba(10,20,30,.08); --shadow:0 10px 28px rgba(16,34,64,.08), inset 0 1px 0 rgba(255,255,255,.6); }
 *{box-sizing:border-box}
 html,body{height:100%}
+
+html{background:var(--bg)}
+
 body{
   margin:0;
   background:
@@ -75,7 +78,16 @@ body{
   font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,"Microsoft YaHei",Helvetica,Arial,"Noto Sans",sans-serif;
   letter-spacing:.2px;
 }
-.wrap{max-width:1100px; margin:48px auto; padding:0 20px}
+
+/* 浅色模式下的背景渐变调整 */
+.light html{background:var(--bg)}
+.light body{
+  background:
+    radial-gradient(1200px 600px at 80% -100px, rgba(38,103,255,.08), transparent 60%),
+    radial-gradient(900px 600px at -10% -50px, rgba(26,166,183,.06), transparent 60%),
+    var(--bg);
+}
+.wrap{max-width:1100px; margin:48px auto; padding:0 20px; background:var(--bg)}
 header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;}
 .brand{display:flex; align-items:center; gap:14px}
 .logo{width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, var(--brand), var(--accent)); box-shadow:0 10px 20px rgba(90,169,255,.25); position:relative; isolation:isolate;}
@@ -83,7 +95,7 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .title{font-size:22px; font-weight:700; letter-spacing:.3px}
 .subtitle{color:var(--muted); font-size:13px}
 .actions{display:flex; gap:8px; flex-wrap:wrap}
-@media (max-width: 600px){.actions{gap:6px} .btn{padding:8px 12px; font-size:13px}}
+@media (max-width: 600px){.actions{gap:6px; flex-wrap:wrap; justify-content:space-between} .btn{padding:8px 12px; font-size:13px; flex:1; min-width:0; text-align:center}}
 .btn{appearance:none; border:1px solid var(--border); background:var(--panel-2); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition:all 0.2s ease; font-weight:600; text-decoration:none}
 .btn:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)} .btn:active{transform:translateY(0)}
 
@@ -94,17 +106,19 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 
 .hero{border:1px solid var(--border); background:linear-gradient(180deg, rgba(90,169,255,.08), transparent 50%), var(--panel); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; align-items:center; overflow:hidden;}
 .hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px}
+.update-time{color:var(--muted); font-size:13px; margin-bottom:8px; opacity:.8}
 .hero p{margin:0; color:var(--muted)}
 .date{font-feature-settings:"tnum" 1, "cv01" 1; opacity:.9}
-.kpis{display:flex; gap:12px; flex-wrap:nowrap; margin-top:12px; overflow-x:auto; padding-bottom:4px}
-.kpi{flex:0 0 auto; min-width:120px; border:1px solid var(--border); background:var(--panel-2); border-radius:14px; padding:12px}
+.kpis{display:flex; gap:12px; margin-top:12px; flex-wrap:wrap}
+.kpi{flex:1; min-width:0; border:1px solid var(--border); background:var(--panel-2); border-radius:14px; padding:12px; text-align:center}
 .kpi .n{font-size:20px; font-weight:800} .kpi .t{font-size:11px; color:var(--muted)}
-@media (max-width: 600px){.kpis{gap:8px} .kpi{min-width:100px; padding:10px} .kpi .n{font-size:18px} .kpi .t{font-size:10px}}
+@media (max-width: 600px){.kpis{gap:8px} .kpi{padding:10px} .kpi .n{font-size:18px} .kpi .t{font-size:10px}}
 
 .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px; margin-top:18px}
 .col-8{grid-column:span 8} .col-4{grid-column:span 4}
 @media (max-width: 900px){.hero{grid-template-columns:1fr}.col-8,.col-4{grid-column:1 / -1}}
-@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px} .hero{padding:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px}}
+@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:16px} .hero{padding:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px} .actions{justify-content:space-between; width:100%; gap:8px}}
+@media (max-width: 480px){.actions{gap:4px} .btn{padding:6px 10px; font-size:12px}}
 
 .card{border:1px solid var(--border); background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow)}
 .card h3{margin:0; font-size:16px}
@@ -123,11 +137,13 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .sources{display:flex; gap:8px; flex-wrap:wrap}
 .src{font-size:12px; color:var(--brand); text-decoration:none; border-bottom:1px dashed rgba(90,169,255,.4)}
 
-.filterbar{display:flex; gap:8px; flex-wrap:wrap; overflow-x:auto; padding-bottom:4px}
+.filterbar{display:flex; gap:8px; flex-wrap:wrap}
 .pill{padding:8px 12px; border-radius:999px; background:var(--panel-2); border:1px solid var(--border); cursor:pointer; font-size:13px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s ease; color:var(--text)}
 @media (max-width: 600px){.filterbar{gap:6px} .pill{padding:6px 10px; font-size:12px}}
 .pill:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .pill.active{background:var(--brand); color:white; border-color:var(--brand); box-shadow:0 0 0 1px var(--brand) inset}
+.pill.toggle-more{background:var(--muted); color:var(--text); border-color:var(--muted); opacity:0.8}
+.pill.toggle-more:hover{background:var(--brand); color:white; border-color:var(--brand); opacity:1}
 
 .footer{margin:26px 0 60px; color:var(--muted); font-size:11px; text-align:center; opacity:.7}
 .note{opacity:.8} .divider{height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:10px 0}
@@ -157,6 +173,7 @@ export default function Page(){
   const { themeLight } = useTheme();
   const [brief, setBrief] = useState<Brief|null>(null);
   const [filter, setFilter] = useState<string>('全部');
+  const [showAllModels, setShowAllModels] = useState(false);
 
   useEffect(()=>{ fetch('/api/brief').then(r=>r.json()).then(setBrief); },[]);
 
@@ -178,7 +195,6 @@ export default function Page(){
   const Nav = () => (
     <div className="actions">
       <a className="btn" href="/archive">归档</a>
-      <ThemeToggle />
       <button className="btn" onClick={()=>{
         const lines = [`## ${fmtDate(brief.date)} AI 产品每日简报`, `**要点**：${brief.headline}`, '', ...brief.items.map(it=>`- **${it.product}** [${it.type.toUpperCase()}] ${it.summary}`)];
         navigator.clipboard.writeText(lines.join('\n'));
@@ -189,6 +205,7 @@ export default function Page(){
         const a = document.createElement('a');
         a.href = url; a.download = `AI-brief-${brief.date?.replace(/-/g,'')}.html`; a.click(); URL.revokeObjectURL(url);
       }}>导出 HTML</button>
+      <ThemeToggle />
     </div>
   );
 
@@ -200,8 +217,8 @@ export default function Page(){
           <div className="brand">
             <div className="logo" aria-hidden="true"></div>
             <div>
-              <div className="title">AI 产品每日简报</div>
-              <div className="subtitle"><span className="date">{fmtDate(brief.date||new Date().toISOString())}</span> · 自动生成 · 科技感样式</div>
+              <div className="title">AI每日简报</div>
+              <div className="subtitle">AI整合推送</div>
             </div>
           </div>
           <Nav />
@@ -209,8 +226,9 @@ export default function Page(){
 
         <section className="hero">
           <div>
-            <h1>今日要点 · <span>{brief.headline || '—'}</span></h1>
-            <div className="kpis" style={{marginTop:0}}>
+            <h1>今日要点</h1>
+            <div className="update-time">{fmtDate(brief.date||new Date().toISOString())}</div>
+            <div className="kpis" style={{marginTop:12}}>
               {[{n: total, t:'今日条目'},{n: counts.new||0, t:'新发布'},{n: counts.update||0, t:'功能更新'},{n: counts.feedback||0, t:'反馈'},{n: counts.fix||0, t:'修复'}]
                 .map((k,i)=>(<div className="kpi" key={i}><div className="n">{k.n}</div><div className="t">{k.t}</div></div>))}
             </div>
@@ -219,7 +237,14 @@ export default function Page(){
           <div className="card" style={{padding:'14px'}}>
             {/* ✅ 简化的筛选器 */}
             <div className="filterbar">
-              {['全部', ...products].map(p=> (
+              <button
+                className={`pill ${filter==='全部'?'active':''}`}
+                onClick={()=>setFilter('全部')}
+                title="筛选：全部"
+              >
+                全部
+              </button>
+              {products.slice(0, showAllModels ? products.length : 3).map(p=> (
                 <button
                   key={p}
                   className={`pill ${filter===p?'active':''}`}
@@ -230,6 +255,15 @@ export default function Page(){
                   {p}
                 </button>
               ))}
+              {products.length > 3 && (
+                <button
+                  className="pill toggle-more"
+                  onClick={() => setShowAllModels(!showAllModels)}
+                  title={showAllModels ? "收起" : "显示更多"}
+                >
+                  {showAllModels ? "收起" : `+${products.length - 3}个`}
+                </button>
+              )}
             </div>
             <div className="divider"></div>
             <div className="tags">
