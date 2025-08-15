@@ -27,6 +27,14 @@ body{
   letter-spacing:.2px;
 }
 
+/* 浅色模式下的背景渐变调整 */
+.light body{
+  background:
+    radial-gradient(1200px 600px at 80% -100px, rgba(38,103,255,.08), transparent 60%),
+    radial-gradient(900px 600px at -10% -50px, rgba(26,166,183,.06), transparent 60%),
+    var(--bg);
+}
+
 /* 主题切换按钮样式 */
 .theme-toggle{
   display:flex; 
@@ -47,14 +55,9 @@ body{
 }
 
 .theme-toggle .icon{
-  width:16; 
-  height:16; 
+  width:16px; 
+  height:16px; 
   color:var(--brand);
-}
-
-.theme-toggle .text{
-  font-size:13px; 
-  font-weight:600;
 }
 
 /* 通用按钮样式 */

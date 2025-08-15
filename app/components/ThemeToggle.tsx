@@ -11,7 +11,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       title={themeLight ? '切换到深色模式' : '切换到浅色模式'}
     >
-      <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
         {themeLight ? (
           // 月亮图标 - 深色模式
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -23,7 +23,6 @@ export function ThemeToggle() {
           </>
         )}
       </svg>
-      <span className="text">{themeLight ? '深色' : '浅色'}</span>
     </button>
   );
 }

@@ -30,6 +30,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('ai-brief-theme', themeLight ? 'light' : 'dark');
   }, [themeLight]);
 
+  // 应用主题到HTML元素
+  useEffect(() => {
+    const htmlElement = document.documentElement;
+    if (themeLight) {
+      htmlElement.classList.add('light');
+    } else {
+      htmlElement.classList.remove('light');
+    }
+  }, [themeLight]);
+
   const toggleTheme = () => setThemeLight(v => !v);
 
   return (
