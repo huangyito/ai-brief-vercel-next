@@ -83,8 +83,9 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .title{font-size:22px; font-weight:700; letter-spacing:.3px}
 .subtitle{color:var(--muted); font-size:13px}
 .actions{display:flex; gap:8px; flex-wrap:wrap}
-.btn{appearance:none; border:1px solid var(--border); background:var(--panel); color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; box-shadow:var(--shadow); font-weight:600; text-decoration:none}
-.btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
+@media (max-width: 600px){.actions{gap:6px} .btn{padding:8px 12px; font-size:13px}}
+.btn{appearance:none; border:1px solid var(--border); background:var(--panel-2); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition:all 0.2s ease; font-weight:600; text-decoration:none}
+.btn:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)} .btn:active{transform:translateY(0)}
 
 .theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease}
 .theme-toggle:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
@@ -95,13 +96,15 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px}
 .hero p{margin:0; color:var(--muted)}
 .date{font-feature-settings:"tnum" 1, "cv01" 1; opacity:.9}
-.kpis{display:flex; gap:12px; flex-wrap:wrap; margin-top:12px}
-.kpi{flex:1; min-width:160px; border:1px solid var(--border); background:var(--panel-2); border-radius:14px; padding:14px}
-.kpi .n{font-size:22px; font-weight:800} .kpi .t{font-size:12px; color:var(--muted)}
+.kpis{display:flex; gap:12px; flex-wrap:nowrap; margin-top:12px; overflow-x:auto; padding-bottom:4px}
+.kpi{flex:0 0 auto; min-width:120px; border:1px solid var(--border); background:var(--panel-2); border-radius:14px; padding:12px}
+.kpi .n{font-size:20px; font-weight:800} .kpi .t{font-size:11px; color:var(--muted)}
+@media (max-width: 600px){.kpis{gap:8px} .kpi{min-width:100px; padding:10px} .kpi .n{font-size:18px} .kpi .t{font-size:10px}}
 
 .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px; margin-top:18px}
 .col-8{grid-column:span 8} .col-4{grid-column:span 4}
 @media (max-width: 900px){.hero{grid-template-columns:1fr}.col-8,.col-4{grid-column:1 / -1}}
+@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px} .hero{padding:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px}}
 
 .card{border:1px solid var(--border); background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow)}
 .card h3{margin:0; font-size:16px}
@@ -120,10 +123,11 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .sources{display:flex; gap:8px; flex-wrap:wrap}
 .src{font-size:12px; color:var(--brand); text-decoration:none; border-bottom:1px dashed rgba(90,169,255,.4)}
 
-.filterbar{display:flex; gap:8px; flex-wrap:wrap}
-.pill{padding:8px 10px; border-radius:999px; background:var(--chip); border:1px solid var(--border); cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:8px}
-.pill.active{box-shadow:0 0 0 1px var(--brand) inset; color:var(--brand)}
-.pill a{font-size:11px; margin-left:6px; opacity:.8; text-decoration:none; border-bottom:1px dashed rgba(255,255,255,.2); color:inherit}
+.filterbar{display:flex; gap:8px; flex-wrap:wrap; overflow-x:auto; padding-bottom:4px}
+.pill{padding:8px 12px; border-radius:999px; background:var(--panel-2); border:1px solid var(--border); cursor:pointer; font-size:13px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s ease; color:var(--text)}
+@media (max-width: 600px){.filterbar{gap:6px} .pill{padding:6px 10px; font-size:12px}}
+.pill:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.pill.active{background:var(--brand); color:white; border-color:var(--brand); box-shadow:0 0 0 1px var(--brand) inset}
 
 .footer{margin:26px 0 60px; color:var(--muted); font-size:11px; text-align:center; opacity:.7}
 .note{opacity:.8} .divider{height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:10px 0}
@@ -213,26 +217,19 @@ export default function Page(){
           </div>
 
           <div className="card" style={{padding:'14px'}}>
-            {/* ✅ 带 LOGO 的筛选器；每个产品附"历史"链接 */}
+            {/* ✅ 简化的筛选器 */}
             <div className="filterbar">
-              {['全部', ...products].map(p=> {
-                const meta = PRODUCT_META[p] || { label: p, icon: <svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="currentColor"/></svg> };
-                const href = `/history/${encodeURIComponent(p)}`;
-                return (
-                  <div key={p} style={{display:'inline-flex', alignItems:'center', gap:8}}>
-                    <button
-                      className={`pill ${filter===p?'active':''}`}
-                      onClick={()=>setFilter(p)}
-                      data-prod={p}
-                      title={`筛选：${meta.label}`}
-                    >
-                      <span style={{display:'grid',placeItems:'center'}}>{meta.icon}</span>
-                      <span>{meta.label}</span>
-                    </button>
-                    {p!=='全部' && <a className="pill" href={href} title={`查看 ${meta.label} 历史`} style={{padding:'6px 8px'}}>历史</a>}
-                  </div>
-                );
-              })}
+              {['全部', ...products].map(p=> (
+                <button
+                  key={p}
+                  className={`pill ${filter===p?'active':''}`}
+                  onClick={()=>setFilter(p)}
+                  data-prod={p}
+                  title={`筛选：${p}`}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
             <div className="divider"></div>
             <div className="tags">
@@ -259,7 +256,6 @@ export default function Page(){
                         <div style={{display:'flex', alignItems:'center', gap:10, flexWrap:'wrap', marginBottom:4}}>
                           <span className="prod">{it.product}</span>
                           <span className="chg" data-type={it.type}>{it.type.toUpperCase()}</span>
-                          <a className="tag" href={`/history/${encodeURIComponent(it.product)}`}>历史</a>
                         </div>
                         <div className="desc">{it.summary}</div>
                         <div className="tags" style={{marginTop:8}}>
@@ -275,7 +271,7 @@ export default function Page(){
           </div>
 
           <div className="col-4">
-            <div className="card" style={{marginBottom:16}}>
+            <div className="card">
               <div className="hd"><h3>来源与参考</h3><a className="btn" href="/archive">查看归档</a></div>
               <div className="bd">
                 <div className="sources">
@@ -283,18 +279,12 @@ export default function Page(){
                 </div>
               </div>
             </div>
-            <div className="card">
-              <div className="hd"><h3>关于</h3></div>
-              <div className="bd">
-                <div className="note">本页从 <code>/api/brief</code> 读取当日简报；后端由 Vercel Cron 每天 9:00 JST 生成并写入 KV。</div>
-              </div>
-            </div>
           </div>
         </section>
 
         {/* ✅ 页脚注脚（很小的字） */}
         <div className="footer">
-          注：本页面自动汇总公开来源的更新信息，仅用于学习与研究，不构成任何商业承诺或投资建议。
+          注：本页面自动汇总公开来源的更新信息，每天早上9点更新，仅用于学习与研究，不构成任何商业承诺或投资建议。
         </div>
       </div>
     </div>
