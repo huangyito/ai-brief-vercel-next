@@ -64,30 +64,33 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
       
       // 在背景图片上添加日期
-      ctx.font = '28px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = colors.muted;
+      ctx.font = '30px system-ui, -apple-system, sans-serif';
+      ctx.fillStyle = '#5B6780';
       ctx.textAlign = 'center';
       const date = brief?.date || new Date().toISOString();
-      ctx.fillText(formatDate(date), canvas.width / 2, 180);
+      ctx.fillText(formatDate(date), canvas.width / 2, 172);
       
       // 直接在背景图片上绘制内容
       ctx.textAlign = 'left';
-      let yPos = 280; // 从日期下方开始
+      let yPos = 320; // 第一个内容从 Y: 320 开始
       
       // 绘制项目列表
       const maxItems = Math.min(8, brief?.items.length || 0);
+      
+      // 添加调试信息
+      console.log('开始绘制产品列表，项目数量:', maxItems);
       
       for (let i = 0; i < maxItems; i++) {
         const item = brief.items[i];
         
         // 产品名称和类型标签
-        ctx.font = '32px system-ui, -apple-system, sans-serif';
-        ctx.fillStyle = colors.muted;
+        ctx.font = '36px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = '#000000';
         ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 120, yPos);
         
         // 项目描述
-        ctx.font = '24px system-ui, -apple-system, sans-serif';
-        ctx.fillStyle = colors.text;
+        ctx.font = '30px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = '#000000';
         const maxDescWidth = canvas.width - 240; // 左右各120px边距
         let desc = item.summary;
         
@@ -95,37 +98,37 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
         if (ctx.measureText(desc).width > maxDescWidth) {
           const words = desc.split('');
           let line = '';
-          let currentY = yPos + 40;
+          let currentY = yPos + 50;
           
           for (let char of words) {
             if (ctx.measureText(line + char).width > maxDescWidth) {
               ctx.fillText(line, 120, currentY);
               line = char;
-              currentY += 35;
+              currentY += 45;
             } else {
               line += char;
             }
           }
           if (line) {
             ctx.fillText(line, 120, currentY);
-            yPos = currentY + 25;
+            yPos = currentY + 30;
           } else {
-            yPos += 40;
+            yPos += 50;
           }
         } else {
-          ctx.fillText(desc, 120, yPos + 40);
-          yPos += 70;
+          ctx.fillText(desc, 120, yPos + 50);
+          yPos += 100;
         }
         
         // 绘制分割线（除了最后一条）
         if (i < maxItems - 1) {
-          ctx.strokeStyle = colors.border;
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = '#808080';
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(120, yPos + 10);
-          ctx.lineTo(canvas.width - 120, yPos + 10);
+          ctx.moveTo(120, yPos + 20);
+          ctx.lineTo(canvas.width - 120, yPos + 20);
           ctx.stroke();
-          yPos += 20;
+          yPos += 60; // 分割线后到下一个内容的间距
         }
       }
       
@@ -184,14 +187,14 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
   ctx.fillText('AI 产品每日简报', width / 2, 120);
   
   // 绘制日期
-  ctx.font = '28px system-ui, -apple-system, sans-serif';
-  ctx.fillStyle = colors.muted;
+  ctx.font = '30px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#5B6780';
   const date = brief?.date || new Date().toISOString();
-  ctx.fillText(formatDate(date), width / 2, 180);
+  ctx.fillText(formatDate(date), width / 2, 172);
   
   // 直接在背景上绘制内容
   ctx.textAlign = 'left';
-  let yPos = 280; // 从标题和日期下方开始
+  let yPos = 320; // 第一个内容从 Y: 320 开始
   
   // 绘制项目列表
   const maxItems = Math.min(8, brief?.items.length || 0);
@@ -200,13 +203,13 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
     const item = brief.items[i];
     
     // 产品名称和类型标签
-    ctx.font = '32px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = colors.muted;
+    ctx.font = '36px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = '#000000';
     ctx.fillText(`${item.product} [${item.type.toUpperCase()}]`, 120, yPos);
     
     // 项目描述
-    ctx.font = '24px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = colors.text;
+    ctx.font = '30px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = '#000000';
     const maxDescWidth = width - 240; // 左右各120px边距
     let desc = item.summary;
     
@@ -214,37 +217,37 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
     if (ctx.measureText(desc).width > maxDescWidth) {
       const words = desc.split('');
       let line = '';
-      let currentY = yPos + 40;
+      let currentY = yPos + 50;
       
       for (let char of words) {
         if (ctx.measureText(line + char).width > maxDescWidth) {
           ctx.fillText(line, 120, currentY);
           line = char;
-          currentY += 35;
+          currentY += 45;
         } else {
           line += char;
         }
       }
       if (line) {
         ctx.fillText(line, 120, currentY);
-        yPos = currentY + 25;
+        yPos = currentY + 40;
       } else {
-        yPos += 40;
+        yPos += 50;
       }
     } else {
-      ctx.fillText(desc, 120, yPos + 40);
-      yPos += 70;
+      ctx.fillText(desc, 120, yPos + 50);
+      yPos += 100;
     }
     
     // 绘制分割线（除了最后一条）
     if (i < maxItems - 1) {
-      ctx.strokeStyle = colors.border;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#808080';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(120, yPos + 10);
-      ctx.lineTo(width - 120, yPos + 10);
+      ctx.moveTo(120, yPos + 20);
+      ctx.lineTo(width - 120, yPos + 20);
       ctx.stroke();
-      yPos += 20;
+      yPos += 40;
     }
   }
 };
