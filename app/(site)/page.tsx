@@ -105,6 +105,12 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .theme-toggle .text{font-size:13px; font-weight:600}
 
 .hero-content{display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; align-items:start; margin-bottom:18px}
+
+.hero-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px}
+.hero-actions{display:flex; gap:8px; align-items:center}
+.btn-icon{display:flex; align-items:center; justify-content:center; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px; cursor:pointer; transition:all 0.2s ease; color:var(--text); min-width:40px; min-height:40px}
+.btn-icon:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.btn-icon svg{width:16px; height:16px; color:var(--brand)}
 .hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px}
 .update-time{color:var(--muted); font-size:13px; margin-bottom:8px; opacity:.8}
 .hero p{margin:0; color:var(--muted)}
@@ -117,7 +123,7 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px; margin-top:18px}
 .col-8{grid-column:span 8} .col-4{grid-column:span 4}
 @media (max-width: 900px){.hero-content{grid-template-columns:1fr}.col-8,.col-4{grid-column:1 / -1}}
-@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:16px} .hero-content{grid-template-columns:1fr; gap:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px} .actions{justify-content:space-between; width:100%; gap:8px}}
+@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:16px} .hero-content{grid-template-columns:1fr; gap:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px} .actions{justify-content:space-between; width:100%; gap:8px} .hero-header{flex-direction:column; align-items:flex-start; gap:12px} .bottom-actions{flex-direction:column; align-items:center; gap:8px}}
 @media (max-width: 480px){.actions{gap:4px} .btn{padding:6px 10px; font-size:12px}}
 
 .card{border:1px solid var(--border); background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow)}
@@ -144,6 +150,9 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .pill.active{background:var(--brand); color:white; border-color:var(--brand); box-shadow:0 0 0 1px var(--brand) inset}
 .pill.toggle-more{background:var(--muted); color:var(--text); border-color:var(--muted); opacity:0.8}
 .pill.toggle-more:hover{background:var(--brand); color:white; border-color:var(--brand); opacity:1}
+
+.bottom-actions{display:flex; gap:12px; justify-content:center; margin:32px 0 20px}
+.bottom-actions .btn{min-width:140px}
 
 .footer{margin:26px 0 60px; color:var(--muted); font-size:11px; text-align:center; opacity:.7}
 .note{opacity:.8} .divider{height:1px; background:linear-gradient(90deg, transparent, var(--border), transparent); margin:10px 0}
@@ -216,17 +225,23 @@ export default function Page(){
         <header>
           <div className="brand">
             <div className="logo" aria-hidden="true"></div>
-            <div>
-              <div className="title">AI每日简报</div>
-              <div className="subtitle">AI整合推送</div>
-            </div>
           </div>
-          <Nav />
         </header>
 
         <div className="hero-content">
           <div>
-            <h1>今日要点</h1>
+            <div className="hero-header">
+              <h1>今日要点</h1>
+              <div className="hero-actions">
+                <button className="btn-icon" onClick={() => window.open('/archive', '_blank')} title="查看档案">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
+                    <path d="M8 5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
+                  </svg>
+                </button>
+                <ThemeToggle />
+              </div>
+            </div>
             <div className="update-time">{fmtDate(brief.date||new Date().toISOString())}</div>
             <div className="kpis" style={{marginTop:12}}>
               {[{n: total, t:'今日条目'},{n: counts.new||0, t:'新发布'},{n: counts.update||0, t:'功能更新'},{n: counts.feedback||0, t:'反馈'},{n: counts.fix||0, t:'修复'}]
@@ -315,6 +330,20 @@ export default function Page(){
             </div>
           </div>
         </section>
+
+        {/* ✅ 底部操作按钮 */}
+        <div className="bottom-actions">
+          <button className="btn" onClick={()=>{
+            const lines = [`## ${fmtDate(brief.date)} AI 产品每日简报`, `**要点**：${brief.headline}`, '', ...brief.items.map(it=>`- **${it.product}** [${it.type.toUpperCase()}] ${it.summary}`)];
+            navigator.clipboard.writeText(lines.join('\n'));
+          }}>复制为 Markdown</button>
+          <button className="btn" onClick={()=>{
+            const blob = new Blob([document.documentElement.outerHTML], {type:'text/html;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `AI-brief-${brief.date?.replace(/-/g,'')}.html`; a.click(); URL.revokeObjectURL(url);
+          }}>导出 HTML</button>
+        </div>
 
         {/* ✅ 页脚注脚（很小的字） */}
         <div className="footer">
