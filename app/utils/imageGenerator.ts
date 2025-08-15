@@ -97,10 +97,10 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
         const labelWidth = ctx.measureText(labelText).width;
         ctx.font = '200 30px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = '#8E99AF';
-        ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 20, labelY);
+        ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 50, labelY);
         
         // 项目描述
-        ctx.font = '200 30px system-ui, -apple-system, sans-serif';
+        ctx.font = '200 36px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = '#000000';
         const maxDescWidth = canvas.width - 240; // 左右各120px边距
         let desc = item.summary;
@@ -223,10 +223,10 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
     const labelWidth = ctx.measureText(labelText).width;
     ctx.font = '200 30px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#8E99AF';
-    ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 20, labelY);
+    ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 50, labelY);
     
     // 项目描述
-    ctx.font = '200 30px system-ui, -apple-system, sans-serif';
+    ctx.font = '200 36px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#000000';
     const maxDescWidth = width - 240; // 左右各120px边距
     let desc = item.summary;
