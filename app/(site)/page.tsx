@@ -104,7 +104,7 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .theme-toggle .icon{width:16; height:16; color:var(--brand)}
 .theme-toggle .text{font-size:13px; font-weight:600}
 
-.hero{border:1px solid var(--border); background:linear-gradient(180deg, rgba(90,169,255,.08), transparent 50%), var(--panel); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; align-items:center; overflow:hidden;}
+.hero-content{display:grid; grid-template-columns: 1.2fr .8fr; gap:18px; align-items:start; margin-bottom:18px}
 .hero h1{margin:0 0 6px; font-size:28px; letter-spacing:.2px}
 .update-time{color:var(--muted); font-size:13px; margin-bottom:8px; opacity:.8}
 .hero p{margin:0; color:var(--muted)}
@@ -116,8 +116,8 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 
 .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px; margin-top:18px}
 .col-8{grid-column:span 8} .col-4{grid-column:span 4}
-@media (max-width: 900px){.hero{grid-template-columns:1fr}.col-8,.col-4{grid-column:1 / -1}}
-@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:16px} .hero{padding:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px} .actions{justify-content:space-between; width:100%; gap:8px}}
+@media (max-width: 900px){.hero-content{grid-template-columns:1fr}.col-8,.col-4{grid-column:1 / -1}}
+@media (max-width: 600px){.wrap{padding:0 16px; margin:32px auto} header{margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:16px} .hero-content{grid-template-columns:1fr; gap:16px} .hero h1{font-size:24px} .title{font-size:20px} .brand{gap:10px} .logo{width:36px; height:36px} .actions{justify-content:space-between; width:100%; gap:8px}}
 @media (max-width: 480px){.actions{gap:4px} .btn{padding:6px 10px; font-size:12px}}
 
 .card{border:1px solid var(--border); background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow)}
@@ -224,7 +224,7 @@ export default function Page(){
           <Nav />
         </header>
 
-        <section className="hero">
+        <div className="hero-content">
           <div>
             <h1>今日要点</h1>
             <div className="update-time">{fmtDate(brief.date||new Date().toISOString())}</div>
@@ -273,7 +273,7 @@ export default function Page(){
               <span className="tag">FIX 修复与回滚</span>
             </div>
           </div>
-        </section>
+        </div>
 
         <section className="grid">
           <div className="col-8">
