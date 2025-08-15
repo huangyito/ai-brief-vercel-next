@@ -97,7 +97,7 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
         const labelWidth = ctx.measureText(labelText).width;
         ctx.font = '200 30px system-ui, -apple-system, sans-serif';
         ctx.fillStyle = '#8E99AF';
-        ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 10, labelY);
+        ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 20, labelY);
         
         // 项目描述
         ctx.font = '200 30px system-ui, -apple-system, sans-serif';
@@ -129,7 +129,7 @@ export const generateAIBriefImage = (options: ImageGeneratorOptions) => {
         
         // 绘制分割线（除了最后一条）
         if (i < maxItems - 1) {
-          const dividerY = contentStartY + 140; // 分割线在内容块下方140px
+          const dividerY = contentStartY + 120; // 分割线上移20px
           ctx.strokeStyle = '#CCCCCC';
           ctx.lineWidth = 2;
           ctx.beginPath();
@@ -223,7 +223,7 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
     const labelWidth = ctx.measureText(labelText).width;
     ctx.font = '200 30px system-ui, -apple-system, sans-serif';
     ctx.fillStyle = '#8E99AF';
-    ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 10, labelY);
+    ctx.fillText(labelText, 120 + ctx.measureText(item.product).width + 20, labelY);
     
     // 项目描述
     ctx.font = '200 30px system-ui, -apple-system, sans-serif';
@@ -255,7 +255,7 @@ const drawContentOnPlainBackground = (ctx: CanvasRenderingContext2D, colors: any
     
     // 绘制分割线（除了最后一条）
     if (i < maxItems - 1) {
-      const dividerY = contentStartY + 140; // 分割线在内容块下方140px
+      const dividerY = contentStartY + 120; // 分割线上移20px
       ctx.strokeStyle = '#CCCCCC';
       ctx.lineWidth = 2;
       ctx.beginPath();
