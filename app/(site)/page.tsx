@@ -99,8 +99,8 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .btn{appearance:none; border:1px solid var(--border); background:var(--panel-2); color:var(--text); padding:8px 12px; border-radius:12px; cursor:pointer; transition:all 0.2s ease; font-weight:600; text-decoration:none}
 .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(0)}
 
-.theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease}
-.theme-toggle:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease; font-weight:600; min-height:36px}
+.theme-toggle:hover{transform:translateY(-1px)} .theme-toggle:active{transform:translateY(0)}
 .theme-toggle .icon{width:16; height:16; color:var(--brand)}
 .theme-toggle .text{font-size:13px; font-weight:600}
 
@@ -130,6 +130,7 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 @media (max-width: 480px){.actions{gap:4px} .btn{padding:6px 10px; font-size:12px} .hero-header{gap:8px} .hero-actions{gap:6px} .btn-icon{width:36px; height:36px} .bottom-actions{gap:6px} .bottom-actions .btn{min-width:100px; max-width:160px}}
 
 .card{border:1px solid var(--border); background:var(--panel); border-radius:var(--radius); box-shadow:var(--shadow)}
+.card-no-border{border:none; background:transparent; box-shadow:none}
 .card h3{margin:0; font-size:16px}
 .card .hd{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px dashed var(--border)}
 .card .bd{padding:10px 8px 14px}
@@ -206,7 +207,12 @@ export default function Page(){
   // 顶部导航：增加「归档」入口
   const Nav = () => (
     <div className="actions">
-      <a className="btn" href="/archive">归档</a>
+      <a className="btn" href="/archive" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 7v10a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
+          <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
+        </svg>
+      </a>
       <button className="btn" onClick={()=>{
         const lines = [`## ${fmtDate(brief.date)} AI 产品每日简报`, `**要点**：${brief.headline}`, '', ...brief.items.map(it=>`- **${it.product}** [${it.type.toUpperCase()}] ${it.summary}`)];
         navigator.clipboard.writeText(lines.join('\n'));
@@ -233,12 +239,6 @@ export default function Page(){
                 <h1>今日要点</h1>
               </div>
               <div className="hero-actions">
-                <button className="btn-icon" onClick={() => window.open('/archive', '_blank')} title="查看档案">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 7v10a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2H8z"/>
-                    <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
-                  </svg>
-                </button>
                 <ThemeToggle />
               </div>
             </div>
@@ -323,8 +323,8 @@ export default function Page(){
               </div>
             </div>
             
-            <div className="card">
-              <div className="hd"><h3>来源与参考</h3><a className="btn" href="/archive">查看归档</a></div>
+            <div className="card card-no-border">
+              <div className="hd"><h3>来源与参考</h3></div>
               <div className="bd">
                 <div className="sources">
                   {Array.from(allSources).map(([url,name])=> (<a className="src" key={url} href={url} target="_blank" rel="noreferrer noopener">{name}</a>))}
