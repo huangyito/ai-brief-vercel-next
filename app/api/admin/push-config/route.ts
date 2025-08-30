@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// 本地开发时使用本地存储，生产环境使用Redis
-let redis: any;
-
-if (process.env.NODE_ENV === 'development' && !process.env.KV_REST_API_URL) {
-  // 本地开发环境，使用内存存储
-  const storage = new Map();
-  redis = {
-    get: async (key: string) => storage.get(key) || null,
-    set: async (key: string, value: any) => storage.set(key, value),
-    del: async (key: string) => storage.delete(key),
-  };
-} else {
-  // 生产环境，使用Redis
-  const { Redis } = await import('@upstash/redis');
-  redis = new Redis({
-    url: process.env.KV_REST_API_URL!,
-    token: process.env.KV_REST_API_TOKEN!,
-  });
+// 创建Redis客户端函数
+async function createRedisClient() {
+  if (process.env.NODE_ENV === 'development' && !process.env.KV_REST_API_URL) {
+    // 本地开发环境，使用内存存储
+    const storage = new Map();
+    return {
+      get: async (key: string) => storage.get(key) || null,
+      set: async (key: string, value: any) => storage.set(key, value),
+      del: async (key: string) => storage.delete(key),
+    };
+  } else {
+    // 生产环境，使用Redis
+    const { Redis } = await import('@upstash/redis');
+    return new Redis({
+      url: process.env.KV_REST_API_URL!,
+      token: process.env.KV_REST_API_TOKEN!,
+    });
+  }
 }
 
 export const runtime = 'edge';
@@ -34,6 +34,7 @@ export type PushConfig = {
 // 获取推送配置
 export async function GET() {
   try {
+    const redis = await createRedisClient();
     let config = await redis.get('push_config');
     
     // 如果没有配置，返回默认配置
@@ -59,6 +60,7 @@ export async function GET() {
 // 更新推送配置
 export async function PUT(request: NextRequest) {
   try {
+    const redis = await createRedisClient();
     const { pushTime, timezone, isEnabled } = await request.json();
     
     // 验证推送时间格式 (HH:mm)
@@ -66,9 +68,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: '推送时间格式不正确，应为 HH:mm' }, { status: 400 });
     }
 
-    // 验证时区
-    if (timezone && !Intl.supportedValuesOf('timeZone').includes(timezone)) {
-      return NextResponse.json({ error: '时区格式不正确' }, { status: 400 });
+    // 时区验证（简化版本）
+    if (timezone) {
+      try {
+        new Intl.DateTimeFormat(undefined, { timeZone: timezone });
+      } catch (error) {
+        return NextResponse.json({ error: '时区格式不正确' }, { status: 400 });
+      }
     }
 
     const existingConfig = await redis.get('push_config') || {

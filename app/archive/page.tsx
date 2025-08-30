@@ -1,17 +1,16 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useTheme } from '../components/ThemeProvider';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { getColor } from '../utils/themeColors';
 
 const styles = `
 :root{
-  --bg:#0b0f16; --panel:#0f1624; --panel-2:#121a2a; --text:#e6ecff; --muted:#9fb0cf;
-  --brand:#5aa9ff; --accent:#7ef0ff; --ok:#63f3a6; --warn:#ffd166; --bad:#ff6b6b; --chip:#1a2132;
-  --border:rgba(255,255,255,.08);
+  --bg:#1c1c1e; --panel:#2c2c2e; --panel-2:#3a3a3c; --text:#ffffff; --muted:#8e8e93;
+  --brand:#5aa9ff; --accent:#7ef0ff; --ok:#63f3a6; --warn:#ffd166; --bad:#ff6b6b; --chip:#3a3a3c;
+  --border:#38383a;
   --shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
   --radius:16px;
 }
-.light{ --bg:#f7f9fc; --panel:#ffffff; --panel-2:#f0f3f9; --text:#0f1624; --muted:#5b6780; --brand:#2667ff; --accent:#1aa6b7; --chip:#e9eef7; --border:rgba(10,20,30,.08); --shadow:0 10px 28px rgba(16,34,64,.08), inset 0 1px 0 rgba(255,255,255,.6); }
+.light{ --bg:#f7f9fc; --panel:#ffffff; --panel-2:#f0f3f9; --text:#0f1624; --muted:#5b6780; --brand:#5aa9ff; --accent:#1aa6b7; --chip:#e9eef7; --border:#e5e7eb; --shadow:0 10px 28px rgba(16,34,64,.08), inset 0 1px 0 rgba(255,255,255,.6); }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -59,8 +58,35 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 `;
 
 export default function ArchivePage(){
-  const { themeLight } = useTheme();
   const [dates, setDates] = useState<string[]>([]);
+  const [isLightTheme, setIsLightTheme] = useState(false);
+  
+  // 初始化主题状态
+  useEffect(() => {
+    // 从 localStorage 恢复主题状态
+    const savedTheme = localStorage.getItem('ai-tracker-theme');
+    const html = document.documentElement;
+    
+    if (savedTheme === 'light') {
+      html.classList.add('light');
+      setIsLightTheme(true);
+    } else {
+      html.classList.remove('light');
+      setIsLightTheme(false);
+    }
+    
+    // 监听DOM变化
+    const observer = new MutationObserver(() => {
+      const html = document.documentElement;
+      setIsLightTheme(html.classList.contains('light'));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(()=>{ fetch('/api/dates').then(r=>r.json()).then(d=>setDates(d.dates||[])); },[]);
 
@@ -72,7 +98,11 @@ export default function ArchivePage(){
   }
 
   return (
-    <div className={themeLight ? 'light' : ''}>
+    <div style={{ 
+      minHeight: '100vh',
+      backgroundColor: getColor.bg(isLightTheme),
+      transition: 'background-color 0.3s ease'
+    }}>
       <style dangerouslySetInnerHTML={{__html: styles}} />
       <div className="wrap">
         <header>
@@ -80,7 +110,6 @@ export default function ArchivePage(){
             <h1 className="title">简报归档</h1>
             <div className="subtitle">从最近到最早 · 点击进入某天</div>
           </div>
-          <ThemeToggle />
         </header>
         
         <div className="grid">

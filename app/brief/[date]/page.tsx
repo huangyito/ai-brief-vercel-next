@@ -1,18 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTheme } from '../../components/ThemeProvider';
-import { ThemeToggle } from '../../components/ThemeToggle';
+import UnifiedMenu from '../../components/UnifiedMenu';
+import UnifiedFooter from '../../components/UnifiedFooter';
+import { getColor } from '../../utils/themeColors';
 
 const styles = `
 :root{
-  --bg:#0b0f16; --panel:#0f1624; --panel-2:#121a2a; --text:#e6ecff; --muted:#9fb0cf;
-  --brand:#5aa9ff; --accent:#7ef0ff; --ok:#63f3a6; --warn:#ffd166; --bad:#ff6b6b; --chip:#1a2132;
-  --border:rgba(255,255,255,.08);
+  --bg:#1c1c1e; --panel:#2c2c2e; --panel-2:#3a3a3c; --text:#ffffff; --muted:#8e8e93;
+  --brand:#5aa9ff; --accent:#7ef0ff; --ok:#63f3a6; --warn:#ffd166; --bad:#ff6b6b; --chip:#3a3a3c;
+  --border:#38383a;
   --shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
   --radius:16px;
 }
-.light{ --bg:#f7f9fc; --panel:#ffffff; --panel-2:#f0f3f9; --text:#0f1624; --muted:#5b6780; --brand:#2667ff; --accent:#1aa6b7; --chip:#e9eef7; --border:rgba(10,20,30,.08); --shadow:0 10px 28px rgba(16,34,64,.08), inset 0 1px 0 rgba(255,255,255,.6); }
+.light{ --bg:#f7f9fc; --panel:#ffffff; --panel-2:#f0f3f9; --text:#0f1624; --muted:#5b6780; --brand:#5aa9ff; --accent:#1aa6b7; --chip:#e9eef7; --border:#e5e7eb; --shadow:0 10px 28px rgba(16,34,64,.08), inset 0 1px 0 rgba(255,255,255,.6); }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -26,7 +27,7 @@ body{
   letter-spacing:.2px;
 }
 .wrap{max-width:1100px; margin:40px auto; padding:0 16px}
-header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px;}
+.brief-header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px;}
 .title{font-size:28px; font-weight:700; margin:0; letter-spacing:.3px}
 .subtitle{color:var(--muted); font-size:16px; margin:8px 0 0}
 .theme-toggle{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all 0.2s ease; color:var(--text)}
@@ -41,12 +42,45 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 .item .header{font-weight:700; display:flex; align-items:center; gap:8px; margin-bottom:8px}
 .item .type{font-size:12px; opacity:.7; padding:4px 8px; background:var(--chip); border-radius:999px; border:1px solid var(--border)}
 .item .summary{opacity:.85; margin-top:6px; line-height:1.6}
-.footer{font-size:11px; opacity:.7; margin-top:24px; text-align:center; color:var(--muted)}
+.footer{font-size:11px; opacity:.7; margin-top:24px; text-align:center; color:var(--muted); display:flex: justify-content:center; align-items:center; gap:16px; flex-wrap:wrap}
 `;
 
-export default function BriefByDate({ params }: { params: { date: string } }){
-  const { themeLight } = useTheme();
-  const { date } = params;
+export default function BriefByDate({ params }: { params: Promise<{ date: string }> }){
+  const [date, setDate] = useState<string>('');
+  const [searchTerm] = useState('');
+  const [isLightTheme, setIsLightTheme] = useState(false);
+  
+  useEffect(() => {
+    params.then(({ date }) => setDate(date));
+  }, [params]);
+  
+  // 初始化主题状态
+  useEffect(() => {
+    // 从 localStorage 恢复主题状态
+    const savedTheme = localStorage.getItem('ai-tracker-theme');
+    const html = document.documentElement;
+    
+    if (savedTheme === 'light') {
+      html.classList.add('light');
+      setIsLightTheme(true);
+    } else {
+      html.classList.remove('light');
+      setIsLightTheme(false);
+    }
+    
+    // 监听DOM变化
+    const observer = new MutationObserver(() => {
+      const html = document.documentElement;
+      setIsLightTheme(html.classList.contains('light'));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
+  
   const [data, setData] = useState<any>(null);
 
   useEffect(()=>{ fetch(`/api/brief/${date}`).then(r=>r.json()).then(setData); },[date]);
@@ -54,16 +88,27 @@ export default function BriefByDate({ params }: { params: { date: string } }){
   if (!data) return <div style={{padding:20}}>加载中…</div>;
 
   return (
-    <div className={themeLight ? 'light' : ''}>
+    <div style={{ 
+      minHeight: '100vh',
+      backgroundColor: getColor.bg(isLightTheme),
+      transition: 'background-color 0.3s ease'
+    }}>
       <style dangerouslySetInnerHTML={{__html: styles}} />
+      
+      {/* 导航栏 */}
+      <UnifiedMenu 
+        searchTerm={searchTerm}
+        onSearchChange={() => {}}
+        showCategoryFilter={false}
+      />
+      
       <div className="wrap">
-        <header>
+        <div className="brief-header">
           <div>
             <h1 className="title">简报 · {date}</h1>
             <div className="subtitle">{data.headline || '—'}</div>
           </div>
-          <ThemeToggle />
-        </header>
+        </div>
         
         <div className="grid">
           {data.items?.map((it:any, i:number)=>(
@@ -77,9 +122,7 @@ export default function BriefByDate({ params }: { params: { date: string } }){
           ))}
         </div>
         
-        <div className="footer">
-          注：汇总公开来源，仅用于学习研究。
-        </div>
+        <UnifiedFooter />
         
         <div style={{marginTop: 24, textAlign: 'center'}}>
           <a href="/archive" className="back">← 返回归档</a>

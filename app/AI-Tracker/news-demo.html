@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今日新闻头条 - AI简报系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- 头部导航 -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-gray-900">AI简报系统</a>
+                </div>
+                <nav class="flex space-x-8">
+                    <a href="/" class="text-gray-500 hover:text-gray-900 px-3 py-2 text-sm font-medium">首页</a>
+                    <a href="/admin" class="text-gray-500 hover:text-gray-900 px-3 py-2 text-sm font-medium">管理后台</a>
+                    <a href="/test-news" class="text-blue-600 hover:text-blue-700 px-3 py-2 text-sm font-medium border-b-2 border-blue-600">新闻测试</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 页面标题 -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">今日新闻头条</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                测试页面 - 展示可能增加的新闻头条栏目，参考OpenAI官网的最新消息结构
+            </p>
+        </div>
+
+        <!-- 搜索和筛选 -->
+        <div class="mb-8 space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+            <!-- 搜索框 -->
+            <div class="relative max-w-md w-full">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <input type="text" id="searchInput" placeholder="搜索新闻..." 
+                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+
+            <!-- 分类筛选 -->
+            <div class="flex flex-wrap gap-2" id="categoryFilters">
+                <button class="px-4 py-2 text-sm font-medium rounded-full transition-colors bg-blue-600 text-white" data-category="全部">全部</button>
+                <button class="px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50" data-category="产品更新">产品更新</button>
+                <button class="px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50" data-category="企业功能">企业功能</button>
+                <button class="px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50" data-category="合作伙伴">合作伙伴</button>
+                <button class="px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50" data-category="研究">研究</button>
+                <button class="px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50" data-category="里程碑">里程碑</button>
+            </div>
+        </div>
+
+        <!-- 特色新闻 -->
+        <div class="mb-12" id="featuredNews">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">特色新闻</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="featuredNewsGrid"></div>
+        </div>
+
+        <!-- 新闻列表 -->
+        <div id="newsList">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6" id="newsListTitle">所有新闻</h2>
+            <div class="space-y-6" id="newsListContent"></div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="mt-12 flex justify-center" id="pagination">
+            <nav class="flex items-center space-x-2">
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">上一页</button>
+                <button class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md">1</button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">2</button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">3</button>
+                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">下一页</button>
+            </nav>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>© 2024 AI简报系统. 这是一个测试页面，用于展示新闻头条栏目的设计。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 模拟新闻数据
+        const MOCK_NEWS = [
+            {
+                id: '1',
+                title: 'OpenAI发布GPT-5预览版，性能提升显著',
+                excerpt: '最新版本的GPT模型在推理能力、代码生成和创意写作方面都有重大突破，预计将在下个月正式发布。',
+                category: '产品更新',
+                date: '2024-01-15',
+                readTime: '3分钟',
+                featured: true,
+                image: '/api/placeholder/400/200'
+            },
+            {
+                id: '2',
+                title: 'ChatGPT企业版新增高级数据分析功能',
+                excerpt: '企业用户现在可以使用更强大的数据分析工具，支持大规模数据处理和可视化。',
+                category: '企业功能',
+                date: '2024-01-14',
+                readTime: '2分钟'
+            },
+            {
+                id: '3',
+                title: 'OpenAI与微软深化合作，推出新的AI服务',
+                excerpt: '两家公司宣布将在Azure平台上推出更多AI服务，包括新的模型部署选项。',
+                category: '合作伙伴',
+                date: '2024-01-13',
+                readTime: '4分钟'
+            },
+            {
+                id: '4',
+                title: 'DALL-E 3获得重大更新，图像质量大幅提升',
+                excerpt: '最新的图像生成模型在细节表现和创意控制方面都有显著改进。',
+                category: '产品更新',
+                date: '2024-01-12',
+                readTime: '3分钟'
+            },
+            {
+                id: '5',
+                title: 'OpenAI发布AI安全研究报告',
+                excerpt: '公司发布了关于AI系统安全性的最新研究，强调了负责任AI开发的重要性。',
+                category: '研究',
+                date: '2024-01-11',
+                readTime: '5分钟'
+            },
+            {
+                id: '6',
+                title: 'ChatGPT移动应用下载量突破1亿',
+                excerpt: '移动应用的受欢迎程度持续增长，用户反馈积极。',
+                category: '里程碑',
+                date: '2024-01-10',
+                readTime: '2分钟'
+            }
+        ];
+
+        let selectedCategory = '全部';
+        let searchQuery = '';
+
+        // 渲染特色新闻
+        function renderFeaturedNews() {
+            const featuredNews = MOCK_NEWS.filter(item => item.featured);
+            const container = document.getElementById('featuredNewsGrid');
+            
+            if (featuredNews.length === 0) {
+                document.getElementById('featuredNews').style.display = 'none';
+                return;
+            }
+
+            container.innerHTML = featuredNews.map(item => `
+                <article class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                    <div class="aspect-video bg-gray-200 flex items-center justify-center">
+                        <div class="text-gray-500 text-sm">图片占位符</div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                ${item.category}
+                            </span>
+                            <span class="text-sm text-gray-500">${item.date}</span>
+                            <span class="text-sm text-gray-500">·</span>
+                            <span class="text-sm text-gray-500">${item.readTime}</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                            ${item.title}
+                        </h3>
+                        <p class="text-gray-600 line-clamp-3">
+                            ${item.excerpt}
+                        </p>
+                        <button class="mt-4 text-blue-600 hover:text-blue-700 font-medium text-sm">
+                            阅读更多 →
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        // 渲染新闻列表
+        function renderNewsList() {
+            const filteredNews = MOCK_NEWS.filter(item => {
+                const matchesCategory = selectedCategory === '全部' || item.category === selectedCategory;
+                const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                     item.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch && !item.featured;
+            });
+
+            const container = document.getElementById('newsListContent');
+            const title = document.getElementById('newsListTitle');
+            
+            title.textContent = selectedCategory === '全部' ? '所有新闻' : `${selectedCategory}新闻`;
+
+            if (filteredNews.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">没有找到相关新闻</h3>
+                        <p class="mt-1 text-sm text-gray-500">尝试调整搜索条件或选择其他分类。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredNews.map(item => `
+                <article class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    ${item.category}
+                                </span>
+                                <span class="text-sm text-gray-500">${item.date}</span>
+                                <span class="text-sm text-gray-500">·</span>
+                                <span class="text-sm text-gray-500">${item.readTime}</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                                ${item.title}
+                            </h3>
+                            <p class="text-gray-600 line-clamp-2">
+                                ${item.excerpt}
+                            </p>
+                            <button class="mt-3 text-blue-600 hover:text-blue-700 font-medium text-sm">
+                                阅读更多 →
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        // 更新分类筛选按钮状态
+        function updateCategoryButtons() {
+            const buttons = document.querySelectorAll('#categoryFilters button');
+            buttons.forEach(button => {
+                const category = button.getAttribute('data-category');
+                if (category === selectedCategory) {
+                    button.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors bg-blue-600 text-white';
+                } else {
+                    button.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50';
+                }
+            });
+        }
+
+        // 渲染所有内容
+        function renderAll() {
+            renderFeaturedNews();
+            renderNewsList();
+            updateCategoryButtons();
+        }
+
+        // 事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 搜索功能
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                searchQuery = e.target.value;
+                renderAll();
+            });
+
+            // 分类筛选
+            document.getElementById('categoryFilters').addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON') {
+                    selectedCategory = e.target.getAttribute('data-category');
+                    renderAll();
+                }
+            });
+
+            // 初始渲染
+            renderAll();
+        });
+    </script>
+</body>
+</html>

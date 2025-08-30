@@ -1,23 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// 本地开发时使用本地存储，生产环境使用Redis
-let redis: any;
-
-if (process.env.NODE_ENV === 'development' && !process.env.KV_REST_API_URL) {
-  // 本地开发环境，使用内存存储
-  const storage = new Map();
-  redis = {
-    get: async (key: string) => storage.get(key) || null,
-    set: async (key: string, value: any) => storage.set(key, value),
-    del: async (key: string) => storage.delete(key),
-  };
-} else {
-  // 生产环境，使用Redis
-  const { Redis } = await import('@upstash/redis');
-  redis = new Redis({
-    url: process.env.KV_REST_API_URL!,
-    token: process.env.KV_REST_API_TOKEN!,
-  });
+// 创建Redis客户端函数
+async function createRedisClient() {
+  if (process.env.NODE_ENV === 'development' && !process.env.KV_REST_API_URL) {
+    // 本地开发环境，使用内存存储
+    console.log('使用本地内存存储');
+    
+    // 使用全局变量来保持数据在请求之间
+    if (!global.localStorage) {
+      (global as any).localStorage = new Map();
+    }
+    
+    return {
+      get: async (key: string) => {
+        const value = global.localStorage.get(key);
+        console.log(`获取 ${key}:`, value);
+        return value || [];
+      },
+      set: async (key: string, value: any) => {
+        console.log(`设置 ${key}:`, value);
+        global.localStorage.set(key, value);
+        return 'OK';
+      },
+      del: async (key: string) => {
+        console.log(`删除 ${key}`);
+        global.localStorage.delete(key);
+        return 1;
+      },
+    };
+  } else {
+    // 生产环境，使用Redis
+    const { Redis } = await import('@upstash/redis');
+    return new Redis({
+      url: process.env.KV_REST_API_URL!,
+      token: process.env.KV_REST_API_TOKEN!,
+    });
+  }
 }
 
 export const runtime = 'edge';
@@ -35,7 +53,16 @@ export type ModelConfig = {
 // 获取所有模型
 export async function GET() {
   try {
-    const models = await redis.get('ai_models') || [];
+    const redis = await createRedisClient();
+    let models = await redis.get('ai_models') || [];
+    
+    // 本地开发环境，如果没有数据则返回空数组（不自动初始化测试数据）
+    if (process.env.NODE_ENV === 'development' && !process.env.KV_REST_API_URL && models.length === 0) {
+      console.log('本地开发环境，返回空模型列表');
+      return NextResponse.json([]);
+    }
+    
+    console.log('返回模型数据:', models);
     return NextResponse.json(models);
   } catch (error) {
     console.error('获取模型列表失败:', error);
@@ -46,6 +73,7 @@ export async function GET() {
 // 添加新模型
 export async function POST(request: NextRequest) {
   try {
+    const redis = await createRedisClient();
     const { name, priority = 1 } = await request.json();
     
     if (!name || typeof name !== 'string') {
@@ -75,6 +103,7 @@ export async function POST(request: NextRequest) {
 // 更新模型
 export async function PUT(request: NextRequest) {
   try {
+    const redis = await createRedisClient();
     const { id, name, isActive, priority } = await request.json();
     
     if (!id) {
@@ -109,6 +138,7 @@ export async function PUT(request: NextRequest) {
 // 删除模型
 export async function DELETE(request: NextRequest) {
   try {
+    const redis = await createRedisClient();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     

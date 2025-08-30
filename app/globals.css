@@ -1,3 +1,14 @@
+/* 防止主题闪烁的样式 */
+html {
+  background: #0b0f16;
+  color: #e6ecff;
+}
+
+html.light {
+  background: #f7f9fc;
+  color: #0f1624;
+}
+
 :root{
   --bg:#0b0f16; --panel:#0f1624; --panel-2:#121a2a; --text:#e6ecff; --muted:#9fb0cf;
   --brand:#5aa9ff; --accent:#7ef0ff; --ok:#63f3a6; --warn:#ffd166; --bad:#ff6b6b; --chip:#1a2132;
