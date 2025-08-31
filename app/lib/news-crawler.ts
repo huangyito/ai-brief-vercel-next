@@ -1,5 +1,5 @@
 // AI新闻爬虫服务
-import { AI_NEWS_SOURCES } from '../api/ai-daily-generate/route';
+import { AI_NEWS_SOURCES } from './chinese-news-sources';
 
 // 新闻爬虫配置
 interface CrawlerConfig {

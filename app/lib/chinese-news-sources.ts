@@ -180,6 +180,62 @@ export const CHINESE_NEWS_SOURCES: ChineseNewsSource[] = [
   }
 ];
 
+// AI新闻来源列表 - 包含国际和国内新闻源
+export const AI_NEWS_SOURCES = [
+  // 国际科技媒体
+  { 
+    name: 'TechCrunch', 
+    url: 'https://techcrunch.com', 
+    category: 'Technology',
+    searchUrl: 'https://techcrunch.com/search/?s=artificial+intelligence',
+    rssUrl: 'https://techcrunch.com/feed/',
+    region: 'international'
+  },
+  { 
+    name: 'The Verge', 
+    url: 'https://theverge.com', 
+    category: 'Technology',
+    searchUrl: 'https://www.theverge.com/search?q=artificial+intelligence',
+    rssUrl: 'https://www.theverge.com/rss/index.xml',
+    region: 'international'
+  },
+  { 
+    name: 'MIT Technology Review', 
+    url: 'https://www.technologyreview.com', 
+    category: 'Research',
+    searchUrl: 'https://www.technologyreview.com/search/?query=artificial+intelligence',
+    rssUrl: 'https://www.technologyreview.com/feed/',
+    region: 'international'
+  },
+  { 
+    name: 'Ars Technica', 
+    url: 'https://arstechnica.com', 
+    category: 'Technology',
+    searchUrl: 'https://arstechnica.com/search/?query=artificial+intelligence',
+    rssUrl: 'https://feeds.arstechnica.com/arstechnica/index',
+    region: 'international'
+  },
+  { 
+    name: 'VentureBeat', 
+    url: 'https://venturebeat.com', 
+    category: 'Business',
+    searchUrl: 'https://venturebeat.com/?s=artificial+intelligence',
+    rssUrl: 'https://venturebeat.com/feed/',
+    region: 'international'
+  },
+  { 
+    name: 'Reuters Tech', 
+    url: 'https://www.reuters.com/technology', 
+    category: 'Business',
+    searchUrl: 'https://www.reuters.com/search/news?blob=artificial+intelligence',
+    rssUrl: 'https://www.reuters.com/tools/rss',
+    region: 'international'
+  },
+  
+  // 国内科技媒体
+  ...CHINESE_NEWS_SOURCES
+];
+
 // 按优先级排序
 export const PRIORITIZED_CHINESE_SOURCES = CHINESE_NEWS_SOURCES.sort((a, b) => b.priority - a.priority);
 

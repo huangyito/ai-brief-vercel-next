@@ -2,11 +2,62 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useTheme } from '../../components/ThemeProvider';
+import dynamic from 'next/dynamic';
 
-// 导入全局主题切换组件
-import { ThemeToggle } from '../../components/ThemeToggle';
-import ColorfulModelIcon from '../../components/ColorfulModelIcon';
+// 使用动态主题hook
+const useTheme = () => {
+  const [theme, setTheme] = useState('dark');
+  
+  useEffect(() => {
+    // 从localStorage获取主题
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+  }, []);
+  
+  return { theme, setTheme };
+};
+
+// 简单的主题切换组件
+const SimpleThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+  
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.className = newTheme;
+  };
+  
+  return (
+    <button 
+      onClick={toggleTheme}
+      className="btn secondary"
+      style={{ minWidth: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+    >
+      {theme === 'dark' ? '🌙' : '☀️'}
+    </button>
+  );
+};
+
+// 简单的模型图标组件
+const SimpleModelIcon = ({ model, size = 20 }: { model: string; size?: number }) => {
+  const getIcon = (modelName: string) => {
+    const name = modelName.toLowerCase();
+    if (name.includes('gpt') || name.includes('openai')) return '🤖';
+    if (name.includes('claude') || name.includes('anthropic')) return '🧠';
+    if (name.includes('gemini') || name.includes('google')) return '💎';
+    if (name.includes('llama') || name.includes('meta')) return '🦙';
+    if (name.includes('qwen') || name.includes('alibaba')) return '🌟';
+    if (name.includes('baichuan') || name.includes('baidu')) return '🚀';
+    return '🔮';
+  };
+  
+  return (
+    <span style={{ fontSize: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {getIcon(model)}
+    </span>
+  );
+};
 
 const styles = `
 :root{
@@ -446,7 +497,7 @@ export default function ModelsPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <ThemeToggle className="btn-icon" />
+                            <SimpleThemeToggle />
             <Link href="/admin" className="back-link">
               ← 返回管理
             </Link>
@@ -469,7 +520,7 @@ export default function ModelsPage() {
               {models.map((model) => (
                 <div key={model.id} className="model-card used" onClick={() => handleRemoveFromUsed(model.id)}>
                   <div className="model-icon">
-                    <ColorfulModelIcon model={model.name} size={20} />
+                    <SimpleModelIcon model={model.name} size={20} />
                   </div>
                   <div className="model-content">
                     <div className="model-name">{model.name}</div>
@@ -507,7 +558,7 @@ export default function ModelsPage() {
                    title={`点击添加 ${baseModel.name}`}
                  >
                    <div className="model-icon">
-                     <ColorfulModelIcon model={baseModel.icon} size={20} />
+                     <SimpleModelIcon model={baseModel.icon} size={20} />
                    </div>
                    <div className="model-name">{baseModel.name}</div>
                  </div>

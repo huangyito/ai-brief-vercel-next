@@ -102,9 +102,11 @@ export class RedisDatabase {
     const results = [];
     
     for (const date of dates) {
-      const data = await this.getAIDailyData(date);
-      if (data) {
-        results.push(data);
+      if (typeof date === 'string') {
+        const data = await this.getAIDailyData(date);
+        if (data) {
+          results.push(data);
+        }
       }
     }
     
